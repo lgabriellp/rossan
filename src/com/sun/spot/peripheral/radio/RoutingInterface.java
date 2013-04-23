@@ -7,45 +7,47 @@ import com.sun.spot.peripheral.radio.proc.util.Tokenizer;
 import com.sun.spot.util.IEEEAddress;
 
 
-public class RoutingInterface {
+public class RoutingInterface implements Runnable {
 	public static final long BROADCAST = 0xFFFF;
 	public static final String SYNC = "sync";
 	public static final String COORD = "coord";
 	public static final String DATA = "data";
 	public static final int BACKOFF_MAX_WAIT = 1000;
+	public static final int ROUTING_RULES_MAX = 100;
 	
 	private static final Random random = new Random();
 	
 	private char[] buffer = new char[RadioPacket.MIN_PAYLOAD_LENGTH];
 	private I802_15_4_MAC mac;
 	private Vector neighbors;
-	private AccessPoint accessPoint;
 	private Application app;
-	
-	private RoutingEntry state;
-	private RoutingEntry parent;
-	
-	private Receiver receiver;
-	private Sender sender;
-	
+	private Thread receiver;
 	private RadioPacket input;
 	private RadioPacket output;
+	private RoutingEntry state;
+	private RoutingEntry parent;
+	private boolean debug;
 	
-	public RoutingInterface() {
+	public RoutingInterface(Application app) {
 		this.mac = RadioFactory.getI802_15_4_MAC();
 		this.neighbors = new Vector();
-		
 		this.input = RadioPacket.getDataPacket();
 		this.output = RadioPacket.getDataPacket();
-	
-		this.receiver = new Receiver();
-		this.sender = new Sender();
-		
+		this.receiver = new Thread(this);
 		this.state = new RoutingEntry();
 		this.parent = null;
+		this.app = app;
+		this.debug = false;
 	}
 
-	public void log(String message) {
+	public void setDebug(boolean debug) {
+		this.debug = debug;
+	}
+	
+	private void log(String message) {
+		if (debug == false)
+			return;
+		
 		System.out.println("[" + IEEEAddress.toDottedHex(getAddress()) + "] " + message);
 	}
 	
@@ -96,7 +98,7 @@ public class RoutingInterface {
 				}
 			}
 		}
-		
+
 		parent = (RoutingEntry)neighbors.elementAt(0);
 		log("update parent to " + IEEEAddress.toDottedHex(parent.source));
 	}
@@ -104,6 +106,7 @@ public class RoutingInterface {
 	public void setCycle(int cycle) {
 		state.cycle = cycle;
 		log("update cycle to " + cycle);
+		notifyNewCycle();
 	}
 	
 	protected void setHops(int hops) {
@@ -116,41 +119,58 @@ public class RoutingInterface {
 		log("update coord to " + coord);
 	}
 	
-	protected RoutingEntry getParent() {
-		return parent;
-	}
-	
 	protected RadioPacket readPacket() {
 		mac.mcpsDataIndication(input);
 		return input;
 	}
-
-	private String writeRoutingMessage(String messageType) {
-		String message = new String(messageType + "," + state);
-		
+	
+	protected String getRoutingMessage() {
+		return state.toString();
+	}
+	
+	protected void writeMessage(String message) {
 		output.setMACPayloadLength(message.getBytes().length);
 		for (int i = 0; i < output.getMACPayloadLength(); i++) {
 			output.setMACPayloadAt(i,(byte)message.getBytes()[i]);
 		}
-		
-		return message;
 	}
 	
-	private void writeDestinationAddress(long address) {
+	private void writeMessageAddresses(long address) {
 		output.setSourceAddress(getAddress());
 		output.setDestinationAddress(address);
 	}
 	
 	public void sendRoutingPacket(String messageType, long address) {
-		String message = writeRoutingMessage(messageType);
-		writeDestinationAddress(address);
+		String message = new String(messageType + "," + state.toString());
+		message = app.prepareRoutingPacket(message, address);
 		
+		writeMessage(message);
+		writeMessageAddresses(address);
+		
+		mac.mcpsDataRequest(output);
 		log("sending " + message + " to " + IEEEAddress.toDottedHex(address));
+	}
+	
+	protected void forward(String message) {
+		message = app.forwardData(message);
+		
+		if (message == null)
+			return;
+		
+		writeMessage(message);
+		writeMessageAddresses(getParentAddress());
 		mac.mcpsDataRequest(output);
 	}
 	
 	protected void addNeighbor(RoutingEntry entry) {
-		neighbors.addElement(entry);
+		int index = neighbors.indexOf(entry);
+		
+		if (index == -1) {
+			neighbors.addElement(entry);
+		} else {
+			neighbors.setElementAt(entry, index);
+		}
+		
 		log("adding neighbor " + IEEEAddress.toDottedHex(entry.source));
 	}
 	
@@ -162,6 +182,38 @@ public class RoutingInterface {
 		return random.nextInt(BACKOFF_MAX_WAIT);
 	}
 	
+	protected void resolveIsCoord() {
+		int rules = app.getRoutingRules(neighbors, parent);
+		
+		if (rules < 0)
+			rules = 0;
+		else if (rules > ROUTING_RULES_MAX)
+			rules = ROUTING_RULES_MAX;
+		
+		setCoord(random.nextInt(ROUTING_RULES_MAX) < rules);
+	}
+	
+	protected void forceCoord() {
+		app.forcedCoord();
+		setCoord(true);
+	}
+	
+	protected void notifyNewCycle() {
+		app.startNewCycle(state.cycle, state.coord);
+	}
+	
+	public long getParentAddress() {
+		return parent.source;
+	}
+	
+	public boolean isParentCoord() {
+		return parent.coord;
+	}
+	
+	public void setParentAsCoord() {
+		parent.coord = true;
+	}
+	
 	protected void handleSync(RoutingEntry sync) {
 		addNeighbor(sync);
 		refreshParent();
@@ -169,33 +221,33 @@ public class RoutingInterface {
 		if (notNewCycle(sync))
 			return;
 
+		resolveIsCoord();
 		setCycle(sync.cycle);
 		setHops(sync.hops + 1);
-		setCoord(false);
 		
 		sendRoutingPacket(SYNC, BROADCAST);
 		waitNotInterrupted(getBackoffTime());
 		
 		refreshParent();
 		
-		if (getParent().coord)
+		if (isParentCoord())
 			return;
 		
-		sendRoutingPacket(COORD, getParent().source);
-		getParent().coord = true;
+		sendRoutingPacket(COORD, getParentAddress());
+		setParentAsCoord();
 	}
 
 	private void handleCoord(RoutingEntry coord) {
 		addNeighbor(coord);
 		
-		setCoord(true);
+		forceCoord();
 		sendRoutingPacket(SYNC, BROADCAST);
 	}
 	
-	private void handleData(DataMessage dataMessage) {
-		
+	private void handleData(DataMessage data) {
+		forward(data.getMessage());
 	}
-	
+
 	protected char[] handleMessage(RadioPacket packet) {
 		for (int i = 0; i < packet.getMACPayloadLength(); i++) {
 			buffer[i] = (char)packet.getMACPayloadAt(i);
@@ -217,10 +269,6 @@ public class RoutingInterface {
 		
 		return buffer;
 	}
-
-	protected void executeSendLoop() {
-		
-	}
 	
 	protected static boolean waitNotInterrupted(int inTime) {
 		try {
@@ -231,37 +279,27 @@ public class RoutingInterface {
 		return true;
 	}
 	
-	public void start() {
+	public void startListening() {
 		receiver.start();
-		sender.start();
 	}
 	
 	public void interrupt() {
 		receiver.interrupt();
-		sender.interrupt();
-	}
-
-	public void setAccessPoint(AccessPoint accessPoint) {
-		this.accessPoint = accessPoint;
 	}
 
 	public void setApp(Application app) {
 		this.app = app;
 	}
-
-	public class Sender extends Thread {
-		public final void run() {
-			while (waitNotInterrupted(1)) {
-				executeSendLoop();
-			}
+	
+	public void run() {
+		while (waitNotInterrupted(1)) {
+			handleMessage(readPacket());
 		}
 	}
-	
-	public class Receiver extends Thread {
-		public void run() {
-			while (waitNotInterrupted(1)) {
-				handleMessage(readPacket());
-			}
-		}
+
+	public void startNewCycle(int backoffMultiplier) {
+		setCycle(state.cycle + 1);
+		sendRoutingPacket(RoutingInterface.SYNC, RoutingInterface.BROADCAST);
+		waitNotInterrupted(backoffMultiplier * BACKOFF_MAX_WAIT);
 	}
 }

@@ -8,4 +8,8 @@ public class DataMessage {
 		
 	}
 
+	public String getMessage() {
+		return "";
+	}
+
 }

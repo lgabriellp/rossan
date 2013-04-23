@@ -28,5 +28,9 @@ public class RoutingEntry {
 	public String toString() {
 		return cycle + "," + hops + "," + coord + "," + energy + ",";
 	}
+	
+	public boolean equals(Object obj) {
+		return source == ((RoutingEntry)obj).source;
+	}
 }
 

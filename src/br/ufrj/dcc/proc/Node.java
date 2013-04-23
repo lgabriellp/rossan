@@ -37,16 +37,16 @@ public class Node extends MIDlet implements Application {
 	}
 	
 	protected void startApp() throws MIDletStateChangeException {
-		System.out.println("Starting: Node");
+		router.log("Starting: Node");
 		router.start();
 	}
     
     protected void pauseApp() {
-    	System.out.println("Pausing: Node");
+    	router.log("Pausing: Node");
     }
     
     protected void destroyApp(boolean unconditional) throws MIDletStateChangeException {
-        System.out.println("Terminating: Node");
+        router.log("Terminating: Node");
         router.interrupt();
     }
 }

@@ -18,16 +18,16 @@ public class AccessPointNode extends MIDlet implements AccessPoint {
 	}
 	
 	protected void startApp() throws MIDletStateChangeException {
-		System.out.println("Starting: Access Point");
+		router.log("Starting: Access Point");
 		router.start();
 	}
 
 	protected void pauseApp() {
-		System.out.println("Pausing: Access Point");
+		router.log("Pausing: Access Point");
 	}
 	
 	protected void destroyApp(boolean arg0) throws MIDletStateChangeException {
 		router.interrupt();
-		System.out.println("Terminating: Access Point");
+		router.log("Terminating: Access Point");
 	}
 }

@@ -1,0 +1,6 @@
+bin/*
+build/*
+j2meclasses/*
+suite/*
+.eclipseme.tmp/*
+

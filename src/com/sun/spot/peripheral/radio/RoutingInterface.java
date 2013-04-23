@@ -207,7 +207,6 @@ public class RoutingInterface {
 		
 		log("received " + new String(buffer) + " from " + IEEEAddress.toDottedHex(sourceAddress));
 		
-		
 		if (messageType.equalsIgnoreCase(SYNC)) {
 			handleSync(new RoutingEntry(sourceAddress, tokenizer));
 		} else if (messageType.equalsIgnoreCase(COORD)) {

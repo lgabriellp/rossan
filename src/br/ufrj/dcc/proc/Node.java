@@ -1,52 +1,60 @@
-/*
- * Copyright (c) 2006 Sun Microsystems, Inc.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to 
- * deal in the Software without restriction, including without limitation the 
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
- * sell copies of the Software, and to permit persons to whom the Software is 
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- **/
-
 package br.ufrj.dcc.proc;
+
+import java.util.Vector;
 
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
 
 import com.sun.spot.peripheral.radio.Application;
+import com.sun.spot.peripheral.radio.RoutingEntry;
 import com.sun.spot.peripheral.radio.RoutingInterface;
 
 public class Node extends MIDlet implements Application {
 	private RoutingInterface router;
 	
 	public Node() {
-		router = new RoutingInterface();
+		router = new RoutingInterface(this);
 		router.setApp(this);
 	}
 	
 	protected void startApp() throws MIDletStateChangeException {
-		router.log("Starting: Node");
-		router.start();
+		log("Starting");
+		router.startListening();
 	}
     
     protected void pauseApp() {
-    	router.log("Pausing: Node");
+    	log("Pausing");
     }
     
     protected void destroyApp(boolean unconditional) throws MIDletStateChangeException {
-        router.log("Terminating: Node");
+        log("Terminating");
         router.interrupt();
     }
+
+	public int getRoutingRules(Vector neighbors, RoutingEntry parent) {
+		log("GetRoutingRules");
+		return 0;
+	}
+
+	public void startNewCycle(int cycle, boolean coord) {
+		log("StartNewCycle");
+	}
+
+	public String prepareRoutingPacket(String message, long address) {
+		log("PrepareRoutingPacket " + message + " to " + address);
+		return message;
+	}
+
+	public void forcedCoord() {
+		log("ForcedCoord");
+	}
+
+	public String forwardData(String message) {
+		log("ForwardData");
+		return message;
+	}
+	
+	private void log(String message) {
+		System.out.println("Node: " + message);
+	}
 }

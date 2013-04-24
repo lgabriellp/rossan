@@ -9,7 +9,7 @@ public class SensorNode extends Node {
 	}
 
 	protected void mainStep() {
-		send(Integer.toString(counter++));
-		waitNotInterrupted(1000);
+		send(counter++);
+		waitNotInterrupted(2500);
 	}
 }

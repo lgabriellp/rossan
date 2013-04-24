@@ -6,23 +6,26 @@ import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
 
 import com.sun.spot.peripheral.radio.Application;
+import com.sun.spot.peripheral.radio.DataMessage;
 import com.sun.spot.peripheral.radio.RoutingEntry;
 import com.sun.spot.peripheral.radio.RoutingInterface;
+import com.sun.spot.peripheral.radio.proc.util.Log;
 import com.sun.spot.util.IEEEAddress;
 
 abstract public class Node extends MIDlet implements Application, Runnable {
 	private RoutingInterface router;
 	private Thread main;
-	private String name;
-	private boolean debug;
+	protected final Log log;
 	
 	public Node(String name) {
-		this.router = new RoutingInterface(this);
-		this.router.setDebug(2);
-		this.debug = false;
-		this.main = new Thread(this);
-		this.name = name;  
+		router = new RoutingInterface(this);
+		log = new Log(IEEEAddress.toDottedHex(this.router.getAddress()));
+		main = new Thread(this);
+		
 		router.setApp(this);
+		router.setLogLevel(Log.DEBUG | Log.INFO);
+		log.setLevel(Log.DEBUG | Log.INFO);
+		
 	}
 	
 	protected RoutingInterface getRoutingInterface() {
@@ -30,40 +33,40 @@ abstract public class Node extends MIDlet implements Application, Runnable {
 	}
 	
 	protected void startApp() throws MIDletStateChangeException {
-		log("Starting");
+		log.info("Starting");
 		router.startListening();
 		main.start();
 	}
     
     protected void pauseApp() {
-    	log("Pausing");
+    	log.info("Pausing");
     }
     
     protected void destroyApp(boolean unconditional) throws MIDletStateChangeException {
-        log("Terminating");
+        log.info("Terminating");
         router.interrupt();
     }
 
 	public int getRoutingRules(Vector neighbors, RoutingEntry parent) {
-		log("GetRoutingRules");
+		log.info("GetRoutingRules");
 		return 0;
 	}
 
 	public void newCycleStarted(int cycle, boolean coord) {
-		log("StartNewCycle");
+		log.info("StartNewCycle");
 	}
 
 	public String prepareRoutingPacket(String message, long address) {
-		log("PrepareRoutingPacket " + message + " to " + IEEEAddress.toDottedHex(address));
+		log.info("PrepareRoutingPacket");
 		return message;
 	}
 
 	public void forcedCoord() {
-		log("ForcedCoord");
+		log.info("ForcedCoord");
 	}
 
 	public String forwardData(String message, long address) {
-		log("ForwardData " + message + " to " + IEEEAddress.toDottedHex(address));
+		log.info("ForwardData");
 		return message;
 	}
 	
@@ -71,16 +74,9 @@ abstract public class Node extends MIDlet implements Application, Runnable {
 		router.waitNotInterrupted(inTime);
 	}
 
-	public boolean send(String message) {
-		log("Send " + message);
-		return router.sendDataPacket(message);
-	}
-	
-	protected void log(String message) {
-		if (!debug)
-			return;
-		
-		System.out.println("[" + IEEEAddress.toDottedHex(router.getAddress()) + "] " + name + ": " + message);
+	public boolean send(int message) {
+		log.info("Send " + message);
+		return router.sendDataPacket(new DataMessage(message));
 	}
 	
 	public void run() {

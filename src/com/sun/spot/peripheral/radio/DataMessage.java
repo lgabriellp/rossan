@@ -11,12 +11,16 @@ public class DataMessage {
 		this.payload = Integer.parseInt(tokenizer.nextToken());
 	}
 
+	public DataMessage(int message) {
+		payload = message;
+	}
+
 	public long getSource() {
 		return this.source;
 	}
 	
-	public String getMessage() {
-		return Integer.toString(payload);
+	public String toString() {
+		return Integer.toString(payload) + ",";
 	}
 
 }

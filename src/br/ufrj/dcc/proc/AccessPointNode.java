@@ -8,12 +8,13 @@ public class AccessPointNode extends Node {
 	}
 
 	public String forwardData(String message, long address) {
-		log("DataArrived " + message);
+		log.info("DataArrived");
 		return null;
 	}
 	
 	protected void mainStep() {
-		getRoutingInterface().startNewCycle(20);
-		log("Ready for new cycle.");
+		getRoutingInterface().startNewCycle();
+		waitNotInterrupted(20000);
+		log.info("Ready for new cycle");
 	}
 }

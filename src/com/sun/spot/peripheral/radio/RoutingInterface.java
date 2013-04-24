@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import com.sun.spot.peripheral.IBattery;
 import com.sun.spot.peripheral.Spot;
+import com.sun.spot.peripheral.radio.proc.util.Log;
 import com.sun.spot.peripheral.radio.proc.util.Tokenizer;
 import com.sun.spot.util.IEEEAddress;
 
@@ -29,7 +30,7 @@ public class RoutingInterface implements Runnable {
 	private RadioPacket output;
 	private RoutingEntry state;
 	private RoutingEntry parent;
-	private int debugLevel;
+	protected final Log log;
 	
 	public RoutingInterface(Application app) {
 		this.mac = RadioFactory.getI802_15_4_MAC();
@@ -41,27 +42,11 @@ public class RoutingInterface implements Runnable {
 		this.state = new RoutingEntry();
 		this.parent = null;
 		this.app = app;
-		this.debugLevel = 2;
+		this.log= new Log(IEEEAddress.toDottedHex(getAddress()));
 	}
 
-	public void setDebug(int debug) {
-		this.debugLevel = debug;
-	}
-	
-	private void log(String message) {
-		System.out.println("[" + IEEEAddress.toDottedHex(getAddress()) + "] " + message);
-	}
-	
-	public void debug(String message) {
-		if (debugLevel <= 0) log(message);
-	}
-	
-	public void warning(String message) {
-		if (debugLevel <= 1) log(message);
-	}
-	
-	public void info(String message) {
-		if (debugLevel <= 2) log(message);
+	public void setLogLevel(int level) {
+		log.setLevel(level);
 	}
 	
 	public int getEnergy() {
@@ -78,18 +63,18 @@ public class RoutingInterface implements Runnable {
 	
 	public void setCycle(int cycle) {
 		state.cycle = cycle;
-		warning("update cycle to " + cycle);
+		log.warning("update cycle to " + cycle);
 		notifyNewCycle();
 	}
 	
 	protected void setHops(int hops) {
 		state.hops = hops;
-		warning("update hops to " + hops);
+		log.warning("update hops to " + hops);
 	}
 	
 	protected void setCoord(boolean coord) {
 		state.coord = coord;
-		warning("update coord to " + coord);
+		log.warning("update coord to " + coord);
 	}
 	
 	protected RadioPacket readPacket() {
@@ -110,7 +95,7 @@ public class RoutingInterface implements Runnable {
 			neighbors.setElementAt(entry, index);
 		}
 		
-		warning("adding neighbor " + IEEEAddress.toDottedHex(entry.source));
+		log.warning("adding neighbor " + IEEEAddress.toDottedHex(entry.source));
 	}
 	
 	protected int coordinatorCompare(RoutingEntry e1, RoutingEntry e2) {
@@ -158,7 +143,7 @@ public class RoutingInterface implements Runnable {
 		}
 
 		parent = (RoutingEntry)neighbors.elementAt(0);
-		info("update parent to " + IEEEAddress.toDottedHex(parent.source));
+		log.info("update parent to " + IEEEAddress.toDottedHex(parent.source));
 	}
 	
 	protected void writeMessage(String message) {
@@ -180,21 +165,21 @@ public class RoutingInterface implements Runnable {
 		writeMessage(message);
 		writeMessageAddresses(address);
 		
+		log.debug("sending " + message + " to " + IEEEAddress.toDottedHex(address));
 		mac.mcpsDataRequest(output);
-		debug("sending " + message + " to " + IEEEAddress.toDottedHex(address));
 	}
 	
-	public boolean sendDataPacket(String message) {
+	public boolean sendDataPacket(DataMessage data) {
 		if (parent == null)
 			return false;
 		
-		message = new String(DATA + "," + message);
+		String message = new String(DATA + "," + data.toString());
 		
 		writeMessage(message);
 		writeMessageAddresses(getParentAddress());
 		
+		log.debug("sending " + message + " to " + IEEEAddress.toDottedHex(getParentAddress()));
 		mac.mcpsDataRequest(output);
-		debug("sending " + message + " to " + IEEEAddress.toDottedHex(getParentAddress()));
 		
 		return true;
 	}
@@ -210,18 +195,18 @@ public class RoutingInterface implements Runnable {
 		
 		writeMessage(message);
 		writeMessageAddresses(getParentAddress());
+		
+		log.info("forwarding " + message + " from " + IEEEAddress.toDottedHex(from) + " to " + IEEEAddress.toDottedHex(getParentAddress()));
 		mac.mcpsDataRequest(output);
-		info("forwarding " + message + " from " + IEEEAddress.toDottedHex(from) + " to " + IEEEAddress.toDottedHex(getParentAddress()));
 	}
 	
 	protected boolean notNewCycle(RoutingEntry sync) {
 		return sync.cycle <= state.cycle;
 	}
 	
-	public void startNewCycle(int backoffMultiplier) {
+	public void startNewCycle() {
 		setCycle(state.cycle + 1);
 		sendRoutingPacket(RoutingInterface.SYNC, RoutingInterface.BROADCAST);
-		waitNotInterrupted(backoffMultiplier * BACKOFF_MAX_WAIT);
 	}
 	
 	protected int getBackoffTime() {
@@ -292,20 +277,21 @@ public class RoutingInterface implements Runnable {
 	}
 	
 	private void handleData(DataMessage data) {
-		forward(data.getMessage(), data.getSource());
+		forward(data.toString(), data.getSource());
 	}
 
 	protected char[] handleMessage(RadioPacket packet) {
-		for (int i = 0; i < buffer.length; i++) buffer[i] = 0;
 		for (int i = 0; i < packet.getMACPayloadLength(); i++) {
 			buffer[i] = (char)packet.getMACPayloadAt(i);
 		}
 		
-		Tokenizer tokenizer = new Tokenizer(buffer);
+		String message = new String(buffer, 0, packet.getMACPayloadLength());
+		Tokenizer tokenizer = new Tokenizer(buffer, 0, packet.getMACPayloadLength());
+		
 		long sourceAddress = packet.getSourceAddress();
 		String messageType = tokenizer.nextToken();
 		
-		debug("received " + new String(buffer) + " from " + IEEEAddress.toDottedHex(sourceAddress));
+		log.debug("received " + message + " from " + IEEEAddress.toDottedHex(sourceAddress));
 		
 		if (messageType.equalsIgnoreCase(SYNC)) {
 			handleSync(new RoutingEntry(sourceAddress, tokenizer));

@@ -6,12 +6,12 @@ public interface Application {
 
 	public int getRoutingRules(Vector neighbors, RoutingEntry parent);
 
-	public void startNewCycle(int cycle, boolean coord);
+	public void newCycleStarted(int cycle, boolean coord);
 
 	public String prepareRoutingPacket(String message, long address);
 
 	public void forcedCoord();
 
-	public String forwardData(String message);
+	public String forwardData(String message, long address);
 
 }

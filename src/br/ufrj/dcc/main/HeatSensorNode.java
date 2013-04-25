@@ -13,7 +13,7 @@ public class HeatSensorNode extends Node {
 		temperature = 0;
 	}
 
-	public Message processDataMessage(PacketReader reader, long address) {
+	public Message processDataMessage(PacketReader reader) {
 		log.info("PrepareDataMessage");
 		return new HeatMessage(reader);
 	}

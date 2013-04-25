@@ -57,7 +57,14 @@ public class RoutingInterface implements Runnable {
 		sendPacket(type, address, mySelf);
 	}
 	
+	public boolean hasNoRoute() {
+		return parent == null;
+	}
+	
 	public void sendDataPacket(Message message) {
+		if (hasNoRoute())
+			return;
+		
 		sendPacket(DATA, parent.getAddress(), message);
 	}
 	
@@ -89,9 +96,12 @@ public class RoutingInterface implements Runnable {
 	public void startNewCycle(int cycle) {
 		mySelf.setCycle((byte)cycle);
 		mySelf.setHops((byte)0);
+		mySelf.setCoord(false);
 		mySelf.setEnergy(getEnergy());
 		mySelf.setAddress(getAddress());
+		
 		sendRoutingPacket(SYNC, BROADCAST);
+		app.startRoutingCycle(mySelf.getCycle(), mySelf.isCoord());
 	}
 	
 	private boolean startNewCycle(RoutingEntry sync) {
@@ -105,6 +115,7 @@ public class RoutingInterface implements Runnable {
 		mySelf.setAddress(getAddress());
 		
 		sendRoutingPacket(SYNC, BROADCAST);
+		app.startRoutingCycle(mySelf.getCycle(), mySelf.isCoord());
 		waitNotInterrupted(getBackoffTime());
 		
 		return true;
@@ -112,7 +123,7 @@ public class RoutingInterface implements Runnable {
 
 	private void refreshParent() {
 		sorter.sort(mySelf.isCoord());
-		parent = (RoutingEntry)neighbors.get(0);
+		parent = (RoutingEntry)neighbors.elementAt(0);
 	}
 	
 	private boolean doesParentBelongToBackbone() {
@@ -132,6 +143,7 @@ public class RoutingInterface implements Runnable {
 	
 	private void forceRouteThrougthMySelf() {
 		forceRouteThrougth(SYNC, mySelf);
+		app.joinedToBackbone();
 	}
 	
 	private void forceRouteThrougthParent() {
@@ -157,9 +169,9 @@ public class RoutingInterface implements Runnable {
 	}
 	
 	private void handleData(PacketReader reader) {
-		Message message = app.processDataMessage(reader, parent.getAddress());
+		Message message = app.processDataMessage(reader);
 		
-		if (message == null)
+		if (hasNoRoute() || message == null)
 			return;
 		
 		sendDataPacket(message);

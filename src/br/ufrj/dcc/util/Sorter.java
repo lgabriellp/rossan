@@ -19,14 +19,14 @@ public class Sorter {
 	}
 	
 	private int compare(int i, RoutingEntry entry, boolean coord) {
-		return ((RoutingEntry)vector.get(i)).compare(entry, coord);
+		return ((RoutingEntry)vector.elementAt(i)).compare(entry, coord);
 	}
 
 	private void swap(int i, int j) {
-		Object oi = vector.get(i);
-		Object oj = vector.get(j);
-		vector.set(i, oj);
-		vector.set(j, oi);
+		Object oi = vector.elementAt(i);
+		Object oj = vector.elementAt(j);
+		vector.setElementAt(oj, i);
+		vector.setElementAt(oi, j);
 	}
 	
 	private void quicksort(int begin, int end, boolean coord) {
@@ -36,7 +36,7 @@ public class Sorter {
 
 		if (end > begin) {
 			int index = (begin + end) / 2; 
-			middle = (RoutingEntry)vector.get(index);
+			middle = (RoutingEntry)vector.elementAt(index);
 
 			while (i <= j) {
 				while (i < end && compare(i, middle, coord) < 0)

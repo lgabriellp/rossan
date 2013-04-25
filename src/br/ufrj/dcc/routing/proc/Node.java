@@ -45,12 +45,16 @@ public abstract class Node extends MIDlet implements Application, Runnable {
     }
 
 	public int getRoutingRules(Vector neighbors, RoutingEntry parent) {
-		log.info("getRoutingRules");
+		String p = "null";
+		if (parent != null) {
+			p = IEEEAddress.toDottedHex(parent.getAddress());
+		}
+		log.info("getRoutingRules neighbor.size="+neighbors.size()+" parent.address="+p);
 		return 0;
 	}
 
 	public void startRoutingCycle(int cycle, boolean coord) {
-		log.info("StartingRoutingCycle");
+		log.info("StartingRoutingCycle cycle="+cycle+" coord="+coord);
 	}
 
 	public void joinedToBackbone() {
@@ -58,12 +62,12 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	}
 
 	public Message processRoutingMessage(Message message, long address) {
-		log.info("PrepareRoutingMessage");
+		log.info("PrepareRoutingMessage "+message+" address="+IEEEAddress.toDottedHex(address));
 		return message;
 	}
 
 	public Message processDataMessage(PacketReader reader, long address) {
-		log.info("PrepareDataMessage");
+		log.info("PrepareDataMessage to.address="+IEEEAddress.toDottedHex(address));
 		return null;
 	}
 	
@@ -72,7 +76,7 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	}
 
 	public void send(Message message) {
-		log.info("Send");
+		log.info("Sending "+message);
 		router.sendDataPacket(message);
 	}
 	

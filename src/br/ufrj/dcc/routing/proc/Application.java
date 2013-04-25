@@ -14,7 +14,7 @@ public interface Application {
 
 	public Message processRoutingMessage(Message message, long address);
 
-	public Message processDataMessage(PacketReader reader, long address);
+	public Message processDataMessage(PacketReader reader);
 
 	
 

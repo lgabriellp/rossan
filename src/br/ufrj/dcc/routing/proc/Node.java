@@ -11,12 +11,12 @@ import br.ufrj.dcc.util.Log;
 import com.sun.spot.util.IEEEAddress;
 
 public abstract class Node extends MIDlet implements Application, Runnable {
-	private RoutingInterface router;
+	private NetworkInterface router;
 	private Thread main;
 	protected final Log log;
 	
 	public Node(String name) {
-		router = new RoutingInterface(this);
+		router = new NetworkInterface(this);
 		log = new Log(IEEEAddress.toDottedHex(this.router.getAddress()));
 		main = new Thread(this);
 		
@@ -25,7 +25,7 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 		
 	}
 	
-	protected RoutingInterface getRoutingInterface() {
+	protected NetworkInterface getRoutingInterface() {
 		return this.router;
 	}
 	

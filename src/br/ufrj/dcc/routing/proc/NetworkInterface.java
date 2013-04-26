@@ -12,7 +12,7 @@ import com.sun.spot.peripheral.Spot;
 import com.sun.spot.peripheral.radio.RadioFactory;
 
 
-public class RoutingInterface implements Runnable {
+public class NetworkInterface implements Runnable {
 	public static final long BROADCAST = 0xFFFF;
 	public static final byte SYNC = 1;
 	public static final byte COORD = 2;
@@ -31,7 +31,7 @@ public class RoutingInterface implements Runnable {
 	private RoutingEntry parent;
 	private Sorter sorter;
 	
-	public RoutingInterface(Application app) {
+	public NetworkInterface(Application app) {
 		this.mac = MacInterface.getInstance();
 		this.neighbors = new Vector();
 		this.receiver = new Thread(this);

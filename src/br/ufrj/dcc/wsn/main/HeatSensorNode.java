@@ -1,8 +1,8 @@
-package br.ufrj.dcc.main;
+package br.ufrj.dcc.wsn.main;
 
-import br.ufrj.dcc.mac.PacketReader;
-import br.ufrj.dcc.routing.proc.Message;
-import br.ufrj.dcc.routing.proc.Node;
+import br.ufrj.dcc.wsn.link.PacketReader;
+import br.ufrj.dcc.wsn.network.proc.Message;
+import br.ufrj.dcc.wsn.network.proc.Node;
 
 
 public class HeatSensorNode extends Node {

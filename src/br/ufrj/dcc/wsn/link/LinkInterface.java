@@ -1,22 +1,22 @@
-package br.ufrj.dcc.mac;
+package br.ufrj.dcc.wsn.link;
 
 import com.sun.spot.peripheral.radio.I802_15_4_MAC;
 import com.sun.spot.peripheral.radio.RadioFactory;
 
-public class MacInterface {
-	private static MacInterface instance;
+public class LinkInterface {
+	private static LinkInterface instance;
 	
 	private final I802_15_4_MAC mac;
 	private final PacketReader reader;
 	private final PacketWriter writer;
 
-	public static MacInterface getInstance() {
+	public static LinkInterface getInstance() {
 		if (instance == null)
-			instance = new MacInterface();
+			instance = new LinkInterface();
 		return instance;
 	}
 	
-	private MacInterface() {
+	private LinkInterface() {
 		this.mac = RadioFactory.getI802_15_4_MAC();
 		this.reader = new PacketReader();
 		this.writer = new PacketWriter();

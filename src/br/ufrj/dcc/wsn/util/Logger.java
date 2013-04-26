@@ -1,6 +1,6 @@
-package br.ufrj.dcc.util;
+package br.ufrj.dcc.wsn.util;
 
-public class Log {
+public class Logger {
 	public static final int NONE = 0;
 	public static final int INFO = 1 << 0;
 	public static final int WARNING = 1 << 1;
@@ -9,7 +9,7 @@ public class Log {
 	private String prefix;
 	private int level;
 
-	public Log(String prefix) {
+	public Logger(String prefix) {
 		this.prefix = prefix;
 		this.level = NONE;
 	}

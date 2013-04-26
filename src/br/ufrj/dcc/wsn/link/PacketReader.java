@@ -1,4 +1,4 @@
-package br.ufrj.dcc.mac;
+package br.ufrj.dcc.wsn.link;
 
 import com.sun.spot.peripheral.radio.RadioPacket;
 

@@ -1,12 +1,12 @@
-package br.ufrj.dcc.routing.proc;
+package br.ufrj.dcc.wsn.network.proc;
 
 import java.util.Random;
 import java.util.Vector;
 
-import br.ufrj.dcc.mac.MacInterface;
-import br.ufrj.dcc.mac.PacketReader;
-import br.ufrj.dcc.mac.PacketWriter;
-import br.ufrj.dcc.util.Sorter;
+import br.ufrj.dcc.wsn.link.LinkInterface;
+import br.ufrj.dcc.wsn.link.PacketReader;
+import br.ufrj.dcc.wsn.link.PacketWriter;
+import br.ufrj.dcc.wsn.util.Sorter;
 
 import com.sun.spot.peripheral.Spot;
 import com.sun.spot.peripheral.radio.RadioFactory;
@@ -22,7 +22,7 @@ public class NetworkInterface implements Runnable {
 	
 	private static final Random random = new Random();
 
-	private MacInterface mac;
+	private LinkInterface mac;
 	
 	private Vector neighbors;
 	private Application app;
@@ -32,7 +32,7 @@ public class NetworkInterface implements Runnable {
 	private Sorter sorter;
 	
 	public NetworkInterface(Application app) {
-		this.mac = MacInterface.getInstance();
+		this.mac = LinkInterface.getInstance();
 		this.neighbors = new Vector();
 		this.receiver = new Thread(this);
 		this.mySelf = new RoutingEntry();

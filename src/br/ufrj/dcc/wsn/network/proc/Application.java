@@ -1,8 +1,8 @@
-package br.ufrj.dcc.routing.proc;
+package br.ufrj.dcc.wsn.network.proc;
 
 import java.util.Vector;
 
-import br.ufrj.dcc.mac.PacketReader;
+import br.ufrj.dcc.wsn.link.PacketReader;
 
 public interface Application {
 

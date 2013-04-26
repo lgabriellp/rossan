@@ -1,7 +1,7 @@
-package br.ufrj.dcc.routing.proc;
+package br.ufrj.dcc.wsn.network.proc;
 
-import br.ufrj.dcc.mac.PacketReader;
-import br.ufrj.dcc.mac.PacketWriter;
+import br.ufrj.dcc.wsn.link.PacketReader;
+import br.ufrj.dcc.wsn.link.PacketWriter;
 
 
 public class RoutingEntry extends Message {

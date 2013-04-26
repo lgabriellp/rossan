@@ -1,28 +1,28 @@
-package br.ufrj.dcc.routing.proc;
+package br.ufrj.dcc.wsn.network.proc;
 
 import java.util.Vector;
 
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
 
-import br.ufrj.dcc.mac.PacketReader;
-import br.ufrj.dcc.util.Log;
+import br.ufrj.dcc.wsn.link.PacketReader;
+import br.ufrj.dcc.wsn.util.Logger;
 
 import com.sun.spot.util.IEEEAddress;
+
 
 public abstract class Node extends MIDlet implements Application, Runnable {
 	private NetworkInterface router;
 	private Thread main;
-	protected final Log log;
+	protected final Logger log;
 	
 	public Node(String name) {
 		router = new NetworkInterface(this);
-		log = new Log(IEEEAddress.toDottedHex(this.router.getAddress()));
+		log = new Logger(IEEEAddress.toDottedHex(this.router.getAddress()));
 		main = new Thread(this);
 		
 		router.setApp(this);
-		log.setLevel(Log.DEBUG | Log.INFO);
-		
+		log.setLevel(Logger.DEBUG | Logger.INFO);
 	}
 	
 	protected NetworkInterface getRoutingInterface() {

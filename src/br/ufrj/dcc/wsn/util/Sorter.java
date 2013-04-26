@@ -1,8 +1,8 @@
-package br.ufrj.dcc.util;
+package br.ufrj.dcc.wsn.util;
 
 import java.util.Vector;
 
-import br.ufrj.dcc.routing.proc.RoutingEntry;
+import br.ufrj.dcc.wsn.network.proc.RoutingEntry;
 
 public class Sorter {
 	private Vector vector;

@@ -1,8 +1,8 @@
-package br.ufrj.dcc.main;
+package br.ufrj.dcc.wsn.main;
 
-import br.ufrj.dcc.mac.PacketReader;
-import br.ufrj.dcc.mac.PacketWriter;
-import br.ufrj.dcc.routing.proc.Message;
+import br.ufrj.dcc.wsn.link.PacketReader;
+import br.ufrj.dcc.wsn.link.PacketWriter;
+import br.ufrj.dcc.wsn.network.proc.Message;
 
 
 public class HeatMessage extends Message {

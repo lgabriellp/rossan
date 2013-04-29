@@ -17,7 +17,7 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	protected final Logger log;
 	
 	public Node(String name) {
-		router = new NetworkInterface(this);
+		router = NetworkInterface.getInstance();
 		log = new Logger(IEEEAddress.toDottedHex(this.router.getAddress()));
 		main = new Thread(this);
 		

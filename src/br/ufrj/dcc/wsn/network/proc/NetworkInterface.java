@@ -21,6 +21,7 @@ public class NetworkInterface implements Runnable {
 	public static final int ROUTING_RULES_MAX = 100;
 	
 	private static final Random random = new Random();
+	private static NetworkInterface instance;
 
 	private LinkInterface mac;
 	
@@ -31,14 +32,20 @@ public class NetworkInterface implements Runnable {
 	private RoutingEntry parent;
 	private Sorter sorter;
 	
-	public NetworkInterface(Application app) {
+	private NetworkInterface() {
 		this.mac = LinkInterface.getInstance();
 		this.neighbors = new Vector();
 		this.receiver = new Thread(this);
 		this.mySelf = new RoutingEntry();
 		this.sorter = new Sorter(this.neighbors);
 		this.parent = null;
-		this.app = app;
+		this.app = null;
+	}
+	
+	public static NetworkInterface getInstance() {
+		if (instance == null)
+			instance = new NetworkInterface();
+		return instance;
 	}
 	
 	public void sendPacket(byte type, long address, Message message) {

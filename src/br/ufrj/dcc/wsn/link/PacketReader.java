@@ -52,7 +52,7 @@ public class PacketReader {
 		return position;
 	}
 	
-	public int getCapacity() {
+	public int getLength() {
 		return packet.getMACPayloadLength();
 	}
 }

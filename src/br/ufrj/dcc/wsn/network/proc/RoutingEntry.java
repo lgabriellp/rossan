@@ -27,7 +27,7 @@ public class RoutingEntry extends Message {
 		energy = reader.getNextShort();
 	}
 	
-	public void writeTo(PacketWriter writer) {
+	public void writeInto(PacketWriter writer) {
 		writer.setNext(cycle);
 		writer.setNext(hops);
 		writer.setNext((byte)(coord ? 1 : 0));
@@ -102,7 +102,7 @@ public class RoutingEntry extends Message {
 		this.energy = energy;
 	}
 
-	public int getSize() {
+	public int getLength() {
 		return 5;
 	}
 }

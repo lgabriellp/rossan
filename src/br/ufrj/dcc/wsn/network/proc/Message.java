@@ -22,8 +22,8 @@ public abstract class Message {
 		return address;
 	}
 	
-	public abstract int getSize();
+	public abstract int getLength();
 	public abstract void readFrom(PacketReader reader);
-	public abstract void writeTo(PacketWriter writer);
+	public abstract void writeInto(PacketWriter writer);
 	public abstract String toString();
 }

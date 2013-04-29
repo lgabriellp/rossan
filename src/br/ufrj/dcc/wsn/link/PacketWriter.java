@@ -53,13 +53,13 @@ public class PacketWriter {
 		return position;
 	}
 	
-	public void setSize(int capacity) {
+	public void setLength(int capacity) {
 		packet.setMACPayloadLength(capacity);
 	}
 	
 	public void copyPayload(PacketReader reader) {
-		setSize(reader.getCapacity());
-		for (int i = 0; i < reader.getCapacity(); i++) {
+		setLength(reader.getLength());
+		for (int i = 0; i < reader.getLength(); i++) {
 			setNext(reader.getNextByte());
 		}
 	}

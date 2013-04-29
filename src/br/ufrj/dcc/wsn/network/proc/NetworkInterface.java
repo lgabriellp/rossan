@@ -6,6 +6,7 @@ import java.util.Vector;
 import br.ufrj.dcc.wsn.link.LinkInterface;
 import br.ufrj.dcc.wsn.link.PacketReader;
 import br.ufrj.dcc.wsn.link.PacketWriter;
+import br.ufrj.dcc.wsn.util.PerformanceAccount;
 import br.ufrj.dcc.wsn.util.Sorter;
 
 import com.sun.spot.peripheral.Spot;
@@ -51,12 +52,15 @@ public class NetworkInterface implements Runnable {
 	public void sendPacket(byte type, long address, Message message) {
 		message = app.processRoutingMessage(message, address);
 		
+		int messageLength = 1 + message.getLength();
+		
 		PacketWriter writer = mac.getWriter();
 		writer.setSourceAddress(getAddress());
 		writer.setDestinationAddress(address);
-		writer.setSize(1 + message.getSize());
+		writer.setLength(messageLength);
 		writer.setNext(type);
-		message.writeTo(writer);
+		message.writeInto(writer);
+		PerformanceAccount.getInstance().transmiting(messageLength);
 		mac.flush();
 	}
 	
@@ -176,7 +180,9 @@ public class NetworkInterface implements Runnable {
 	}
 	
 	private void handleData(PacketReader reader) {
+		PerformanceAccount.getInstance().stopProcessing();
 		Message message = app.processDataMessage(reader);
+		PerformanceAccount.getInstance().startProcessing();
 		
 		if (hasNoRoute() || message == null)
 			return;
@@ -185,17 +191,21 @@ public class NetworkInterface implements Runnable {
 	}
 	
 	public boolean waitNotInterrupted(int inTime) {
+		PerformanceAccount.getInstance().stopProcessing();
 		try {
 			Thread.sleep(inTime);
 		} catch (InterruptedException e) {
 			return false;
 		}
+		PerformanceAccount.getInstance().startProcessing();
 		return true;
 	}
 	
 	public void run() {
+		PerformanceAccount.getInstance().startProcessing();
 		while (waitNotInterrupted(1)) {
 			PacketReader reader = mac.getReader();
+			PerformanceAccount.getInstance().receiving(reader.getLength());
 			
 			byte packetType = reader.getNextByte();
 			
@@ -207,6 +217,7 @@ public class NetworkInterface implements Runnable {
 				handleData(reader);
 			}
 		}
+		PerformanceAccount.getInstance().stopProcessing();
 	}
 	
 	public void startListening() {

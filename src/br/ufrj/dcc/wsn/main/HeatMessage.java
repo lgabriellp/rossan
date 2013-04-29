@@ -21,7 +21,7 @@ public class HeatMessage extends Message {
 		temperature = reader.getNextShort();
 	}
 	
-	public void writeTo(PacketWriter writer) {
+	public void writeInto(PacketWriter writer) {
 		writer.setSourceAddress(getAddress());
 		writer.setNext(temperature);
 	}
@@ -30,7 +30,7 @@ public class HeatMessage extends Message {
 		return "heat," + temperature;
 	}
 
-	public int getSize() {
+	public int getLength() {
 		return 2;
 	}
 }

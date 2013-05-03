@@ -14,7 +14,8 @@ public class AccessPointNode extends Node {
 	}
 	
 	public Message processDataMessage(PacketReader reader) {
-		log.info("PrepareDataMessage " + new HeatMessage(reader));
+		Message message = new HeatMessage(reader);
+		log.info("Arrived DataMessage " + message + " from " + message.getAddress());
 		return null;
 	}
 	

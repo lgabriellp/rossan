@@ -15,8 +15,8 @@ public class PacketReader {
 	}
 
 	public int advance(int bytes) {
-		int position = this.position;
-		this.position += bytes;		
+		int position = getPosition();
+		setPosition(position + bytes);
 		return position;
 	}
 	

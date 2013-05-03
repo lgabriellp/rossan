@@ -20,6 +20,6 @@ public class HeatSensorNode extends Node {
 	
 	protected boolean mainStep() {
 		send(new HeatMessage(temperature++));
-		return waitNotInterrupted(2500);
+		return waitNotInterrupted(7500);
 	}
 }

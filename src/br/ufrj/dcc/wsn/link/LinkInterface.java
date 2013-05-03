@@ -3,20 +3,20 @@ package br.ufrj.dcc.wsn.link;
 import com.sun.spot.peripheral.radio.I802_15_4_MAC;
 import com.sun.spot.peripheral.radio.RadioFactory;
 
-public class LinkInterface {
-	private static LinkInterface instance;
+public class LinkInterface implements ILinkInterface {
+	private static ILinkInterface instance;
 	
 	private final I802_15_4_MAC mac;
 	private final PacketReader reader;
 	private final PacketWriter writer;
 
-	public static LinkInterface getInstance() {
+	public static ILinkInterface getInstance() {
 		if (instance == null)
 			instance = new LinkInterface();
 		return instance;
 	}
 	
-	private LinkInterface() {
+	protected LinkInterface() {
 		this.mac = RadioFactory.getI802_15_4_MAC();
 		this.reader = new PacketReader();
 		this.writer = new PacketWriter();
@@ -33,7 +33,7 @@ public class LinkInterface {
 		return writer;
 	}
 	
-	public void flush() {
-		mac.mcpsDataRequest(writer.getPacket());
+	public boolean flush() {
+		return mac.mcpsDataRequest(writer.getPacket()) == I802_15_4_MAC.SUCCESS; 
 	}
 }

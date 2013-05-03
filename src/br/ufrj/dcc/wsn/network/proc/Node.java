@@ -49,7 +49,10 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 		if (parent != null) {
 			p = IEEEAddress.toDottedHex(parent.getAddress());
 		}
-		log.info("getRoutingRules neighbor.size="+neighbors.size()+" parent.address="+p);
+		for (int i = 0; i < neighbors.size(); i++) {
+			log.info("neighbor: "+IEEEAddress.toDottedHex(((RoutingEntry)neighbors.elementAt(i)).getAddress()));
+		}
+		log.info("parent: "+p);
 		return 0;
 	}
 
@@ -75,9 +78,14 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 		return router.waitNotInterrupted(inTime);
 	}
 
-	public void send(Message message) {
-		log.info("Sending "+message);
-		router.sendDataPacket(message);
+	public boolean send(Message message) {
+		boolean success = router.sendDataPacket(message);
+		
+		if (success) {
+			log.info("Sent "+message);
+		}
+		
+		return success;
 	}
 	
 	public void run() {

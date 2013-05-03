@@ -3,9 +3,10 @@ package br.ufrj.dcc.wsn.network.proc;
 import java.util.Random;
 import java.util.Vector;
 
-import br.ufrj.dcc.wsn.link.LinkInterface;
+import br.ufrj.dcc.wsn.link.ILinkInterface;
 import br.ufrj.dcc.wsn.link.PacketReader;
 import br.ufrj.dcc.wsn.link.PacketWriter;
+import br.ufrj.dcc.wsn.link.RangedLinkInterface;
 import br.ufrj.dcc.wsn.util.PerformanceAccount;
 import br.ufrj.dcc.wsn.util.Sorter;
 
@@ -24,7 +25,7 @@ public class NetworkInterface implements Runnable {
 	private static final Random random = new Random();
 	private static NetworkInterface instance;
 
-	private LinkInterface mac;
+	private ILinkInterface link;
 	
 	private Vector neighbors;
 	private Application app;
@@ -34,7 +35,7 @@ public class NetworkInterface implements Runnable {
 	private Sorter sorter;
 	
 	private NetworkInterface() {
-		this.mac = LinkInterface.getInstance();
+		this.link = RangedLinkInterface.getInstance();
 		this.neighbors = new Vector();
 		this.receiver = new Thread(this);
 		this.mySelf = new RoutingEntry();
@@ -49,19 +50,19 @@ public class NetworkInterface implements Runnable {
 		return instance;
 	}
 	
-	public void sendPacket(byte type, long address, Message message) {
+	public boolean sendPacket(byte type, long address, Message message) {
 		message = app.processRoutingMessage(message, address);
 		
 		int messageLength = 1 + message.getLength();
 		
-		PacketWriter writer = mac.getWriter();
+		PacketWriter writer = link.getWriter();
 		writer.setSourceAddress(getAddress());
 		writer.setDestinationAddress(address);
 		writer.setLength(messageLength);
 		writer.setNext(type);
 		message.writeInto(writer);
 		PerformanceAccount.getInstance().transmiting(messageLength);
-		mac.flush();
+		return link.flush();
 	}
 	
 	public void sendRoutingPacket(byte type, long address) {
@@ -72,11 +73,11 @@ public class NetworkInterface implements Runnable {
 		return parent == null;
 	}
 	
-	public void sendDataPacket(Message message) {
+	public boolean sendDataPacket(Message message) {
 		if (hasNoRoute())
-			return;
+			return false;
 		
-		sendPacket(DATA, parent.getAddress(), message);
+		return sendPacket(DATA, parent.getAddress(), message);
 	}
 	
 	private void addNeighbor(RoutingEntry entry) {
@@ -108,7 +109,7 @@ public class NetworkInterface implements Runnable {
 		mySelf.setCycle((byte)cycle);
 		mySelf.setHops((byte)0);
 		mySelf.setCoord(false);
-		mySelf.setEnergy(getEnergy());
+		mySelf.setEnergy(getSpentEnergy());
 		mySelf.setAddress(getAddress());
 		
 		sendRoutingPacket(SYNC, BROADCAST);
@@ -122,7 +123,7 @@ public class NetworkInterface implements Runnable {
 		resolveBelongToBackbone();
 		mySelf.setCycle(sync.getCycle());
 		mySelf.setHops((byte)(sync.getHops() + 1));
-		mySelf.setEnergy(getEnergy());
+		mySelf.setEnergy(getSpentEnergy());
 		mySelf.setAddress(getAddress());
 		
 		sendRoutingPacket(SYNC, BROADCAST);
@@ -192,21 +193,23 @@ public class NetworkInterface implements Runnable {
 	
 	public boolean waitNotInterrupted(int inTime) {
 		PerformanceAccount.getInstance().stopProcessing();
+		
 		try {
 			Thread.sleep(inTime);
 		} catch (InterruptedException e) {
 			return false;
 		}
+		
 		PerformanceAccount.getInstance().startProcessing();
 		return true;
 	}
 	
 	public void run() {
 		PerformanceAccount.getInstance().startProcessing();
+		
 		while (waitNotInterrupted(1)) {
-			PacketReader reader = mac.getReader();
+			PacketReader reader = link.getReader();
 			PerformanceAccount.getInstance().receiving(reader.getLength());
-			
 			byte packetType = reader.getNextByte();
 			
 			if (packetType == SYNC) {
@@ -217,6 +220,7 @@ public class NetworkInterface implements Runnable {
 				handleData(reader);
 			}
 		}
+		
 		PerformanceAccount.getInstance().stopProcessing();
 	}
 	
@@ -228,8 +232,9 @@ public class NetworkInterface implements Runnable {
 		receiver.interrupt();
 	}
 
-	public short getEnergy() {
+	public short getSpentEnergy() {
 		return (short)Spot.getInstance().getPowerController().getBattery().getBatteryLevel();
+		//return PerformanceAccount.getInstance().getSpentEnergy();
 	}
 	
 	public long getAddress() {

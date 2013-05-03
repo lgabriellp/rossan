@@ -1,20 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- first version using hand generated XML -->
 <virtual-config keep-addresses="true" run-midlets="true">
-  <gridview x="400.0" y="320.0" zoom="1.0"/>
-  <virtual-spot address="0a0a.0a66.0000.1001">
+  <gridview x="190.0" y="308.0" zoom="1.0"/>
+  <virtual-spot address="0a00.0068.0000.1001">
     <build file="build.xml"/>
-    <midlet name="br.ufrj.dcc.proc.SensorNode"/>
+    <midlet name="br.ufrj.dcc.wsn.main.HeatSensorNode"/>
     <position x="-300.0" y="-220.0"/>
   </virtual-spot>
-  <virtual-spot address="0a0a.0a66.0000.1002">
+  <virtual-spot address="0a00.0068.0000.1002">
     <build file="build.xml"/>
-    <midlet name="br.ufrj.dcc.proc.SensorNode"/>
+    <midlet name="br.ufrj.dcc.wsn.main.HeatSensorNode"/>
     <position x="-48.0" y="-220.0"/>
   </virtual-spot>
-  <virtual-spot address="0a0a.0a66.0000.1003">
+  <virtual-spot address="0a00.0068.0000.1003">
     <build file="build.xml"/>
-    <midlet name="br.ufrj.dcc.proc.AccessPointNode"/>
+    <midlet name="br.ufrj.dcc.wsn.main.AccessPointNode"/>
     <position x="204.0" y="-220.0"/>
+  </virtual-spot>
+  <virtual-spot address="0a00.0068.0000.1004">
+    <build file="build.xml"/>
+    <midlet name="br.ufrj.dcc.wsn.main.HeatSensorNode"/>
+    <position x="-300.0" y="53.0"/>
+  </virtual-spot>
+  <virtual-spot address="0a00.0068.0000.1005">
+    <build file="build.xml"/>
+    <midlet name="br.ufrj.dcc.wsn.main.HeatSensorNode"/>
+    <position x="42.0" y="50.0"/>
   </virtual-spot>
 </virtual-config>

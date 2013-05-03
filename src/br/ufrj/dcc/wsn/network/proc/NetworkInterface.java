@@ -7,7 +7,7 @@ import br.ufrj.dcc.wsn.link.ILinkInterface;
 import br.ufrj.dcc.wsn.link.PacketReader;
 import br.ufrj.dcc.wsn.link.PacketWriter;
 import br.ufrj.dcc.wsn.link.RangedLinkInterface;
-import br.ufrj.dcc.wsn.util.PerformanceAccount;
+import br.ufrj.dcc.wsn.profile.Profiler;
 import br.ufrj.dcc.wsn.util.Sorter;
 
 import com.sun.spot.peripheral.Spot;
@@ -61,7 +61,7 @@ public class NetworkInterface implements Runnable {
 		writer.setLength(messageLength);
 		writer.setNext(type);
 		message.writeInto(writer);
-		PerformanceAccount.getInstance().transmiting(messageLength);
+		Profiler.getInstance().transmiting(messageLength);
 		return link.flush();
 	}
 	
@@ -181,9 +181,9 @@ public class NetworkInterface implements Runnable {
 	}
 	
 	private void handleData(PacketReader reader) {
-		PerformanceAccount.getInstance().stopProcessing();
+		Profiler.getInstance().stopProcessing();
 		Message message = app.processDataMessage(reader);
-		PerformanceAccount.getInstance().startProcessing();
+		Profiler.getInstance().startProcessing();
 		
 		if (hasNoRoute() || message == null)
 			return;
@@ -192,7 +192,7 @@ public class NetworkInterface implements Runnable {
 	}
 	
 	public boolean waitNotInterrupted(int inTime) {
-		PerformanceAccount.getInstance().stopProcessing();
+		Profiler.getInstance().stopProcessing();
 		
 		try {
 			Thread.sleep(inTime);
@@ -200,16 +200,16 @@ public class NetworkInterface implements Runnable {
 			return false;
 		}
 		
-		PerformanceAccount.getInstance().startProcessing();
+		Profiler.getInstance().startProcessing();
 		return true;
 	}
 	
 	public void run() {
-		PerformanceAccount.getInstance().startProcessing();
+		Profiler.getInstance().startProcessing();
 		
 		while (waitNotInterrupted(1)) {
 			PacketReader reader = link.getReader();
-			PerformanceAccount.getInstance().receiving(reader.getLength());
+			Profiler.getInstance().receiving(reader.getLength());
 			byte packetType = reader.getNextByte();
 			
 			if (packetType == SYNC) {
@@ -221,7 +221,7 @@ public class NetworkInterface implements Runnable {
 			}
 		}
 		
-		PerformanceAccount.getInstance().stopProcessing();
+		Profiler.getInstance().stopProcessing();
 	}
 	
 	public void startListening() {
@@ -234,7 +234,7 @@ public class NetworkInterface implements Runnable {
 
 	public short getSpentEnergy() {
 		return (short)Spot.getInstance().getPowerController().getBattery().getBatteryLevel();
-		//return PerformanceAccount.getInstance().getSpentEnergy();
+		//return Profiler.getInstance().getSpentEnergy();
 	}
 	
 	public long getAddress() {

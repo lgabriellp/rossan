@@ -1,22 +1,22 @@
-package br.ufrj.dcc.wsn.util;
+package br.ufrj.dcc.wsn.profile;
 
-public class PerformanceAccount {
-	private static PerformanceAccount instance;
+public class Profiler {
+	private static Profiler instance;
 	
 	private long processingTimeMs;
 	private long lastProcessingStartTime;
 	private long receivedBytes;
 	private long transmitedBytes;
 	
-	private PerformanceAccount() {
+	private Profiler() {
 		processingTimeMs = 0;
 		receivedBytes = 0;
 		transmitedBytes = 0;
 	}
 	
-	public static PerformanceAccount getInstance() {
+	public static Profiler getInstance() {
 		if (instance == null)
-			instance = new PerformanceAccount();
+			instance = new Profiler();
 		return instance;
 	}
 	

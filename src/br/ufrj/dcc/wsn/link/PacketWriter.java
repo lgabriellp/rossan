@@ -25,6 +25,10 @@ public class PacketWriter {
 		packet.setMACPayloadAt(advance(1), value);
 	}
 	
+	public void setNext(boolean coord) {
+		setNext((byte)(coord ? 1 : 0));
+	}
+	
 	public void setNext(short value) {
 		packet.setMACPayloadBigEndShortAt(advance(2), value);
 	}

@@ -24,6 +24,10 @@ public class PacketReader {
 		return packet.getMACPayloadAt(advance(1));
 	}
 	
+	public boolean getNextBoolean() {
+		return getNextByte() != 0 ? true : false;;
+	}
+
 	public short getNextShort() {
 		return (short)packet.getMACPayloadBigEndShortAt(advance(2));
 	}

@@ -23,14 +23,14 @@ public class RoutingEntry extends Message {
 	public void readFrom(PacketReader reader) {
 		cycle = reader.getNextByte();
 		hops = reader.getNextByte();
-		coord = reader.getNextByte() != 0 ? true : false;
+		coord = reader.getNextBoolean();
 		energy = reader.getNextShort();
 	}
 	
 	public void writeInto(PacketWriter writer) {
 		writer.setNext(cycle);
 		writer.setNext(hops);
-		writer.setNext((byte)(coord ? 1 : 0));
+		writer.setNext(coord);
 		writer.setNext(energy);
 	}
 	

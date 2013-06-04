@@ -17,12 +17,10 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	protected final Logger log;
 	
 	public Node(String name) {
-		router = NetworkInterface.getInstance();
-		log = new Logger(IEEEAddress.toDottedHex(this.router.getAddress()));
-		main = new Thread(this);
-		
+		this.router = NetworkInterface.getInstance();
+		this.log = router.getLog();
+		this.main = new Thread(this);
 		router.setApp(this);
-		log.setLevel(Logger.DEBUG | Logger.INFO);
 	}
 	
 	protected NetworkInterface getRoutingInterface() {
@@ -30,17 +28,17 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	}
 	
 	protected void startApp() throws MIDletStateChangeException {
-		log.info("Starting");
+		log.log(Logger.APP, "Starting");
 		router.startListening();
 		main.start();
 	}
     
     protected void pauseApp() {
-    	log.info("Pausing");
+    	log.log(Logger.APP, "Pausing");
     }
     
     protected void destroyApp(boolean unconditional) throws MIDletStateChangeException {
-        log.info("Terminating");
+    	log.log(Logger.APP, "Terminating");
         router.interrupt();
     }
 
@@ -50,27 +48,27 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 			p = IEEEAddress.toDottedHex(parent.getAddress());
 		}
 		for (int i = 0; i < neighbors.size(); i++) {
-			log.info("neighbor: "+IEEEAddress.toDottedHex(((RoutingEntry)neighbors.elementAt(i)).getAddress()));
+			log.log(Logger.APP, "Neighbor: "+ IEEEAddress.toDottedHex(((RoutingEntry)neighbors.elementAt(i)).getAddress()));
 		}
-		log.info("parent: "+p);
+		log.log(Logger.APP, "parent: "+p);
 		return 0;
 	}
 
 	public void startRoutingCycle(int cycle, boolean coord) {
-		log.info("StartingRoutingCycle cycle="+cycle+" coord="+coord);
+		log.log(Logger.APP, "StartingRoutingCycle cycle="+cycle+" coord="+coord);
 	}
 
 	public void joinedToBackbone() {
-		log.info("JoinedToBackbone");
+		log.log(Logger.APP, "JoinedToBackbone");
 	}
 
 	public Message processRoutingMessage(Message message, long address) {
-		log.info("PrepareRoutingMessage "+message+" address="+IEEEAddress.toDottedHex(address));
+		log.log(Logger.APP, "PrepareRoutingMessage "+message+" address="+IEEEAddress.toDottedHex(address));
 		return message;
 	}
 
 	public Message processDataMessage(PacketReader reader, long address) {
-		log.info("PrepareDataMessage to.address="+IEEEAddress.toDottedHex(address));
+		log.log(Logger.APP, "PrepareDataMessage to.address="+IEEEAddress.toDottedHex(address));
 		return null;
 	}
 	
@@ -82,7 +80,7 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 		boolean success = router.sendDataPacket(message);
 		
 		if (success) {
-			log.info("Sent "+message);
+			log.log(Logger.APP, "Sent "+message);
 		}
 		
 		return success;

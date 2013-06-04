@@ -8,10 +8,11 @@ import br.ufrj.dcc.wsn.link.PacketReader;
 import br.ufrj.dcc.wsn.link.PacketWriter;
 import br.ufrj.dcc.wsn.link.RangedLinkInterface;
 import br.ufrj.dcc.wsn.profile.Profiler;
+import br.ufrj.dcc.wsn.util.Logger;
 import br.ufrj.dcc.wsn.util.Sorter;
 
 import com.sun.spot.peripheral.Spot;
-import com.sun.spot.peripheral.radio.RadioFactory;
+import com.sun.spot.util.IEEEAddress;
 
 
 public class NetworkInterface implements Runnable {
@@ -20,19 +21,22 @@ public class NetworkInterface implements Runnable {
 	public static final byte COORD = 2;
 	public static final byte DATA = 3;
 	public static final int BACKOFF_MAX_WAIT = 1000;
+	public static final int ROUTING_RULES_MIN = 0;
 	public static final int ROUTING_RULES_MAX = 100;
 	
 	private static final Random random = new Random();
 	private static NetworkInterface instance;
 
-	private ILinkInterface link;
+	private final ILinkInterface link;
 	
-	private Vector neighbors;
-	private Application app;
-	private Thread receiver;
-	private RoutingEntry mySelf;
+	private final Vector neighbors;
+	private final Thread receiver;
+	private final RoutingEntry mySelf;
+	private final Sorter sorter;
+	private final Logger log;
+	
 	private RoutingEntry parent;
-	private Sorter sorter;
+	private Application app;
 	
 	private NetworkInterface() {
 		this.link = RangedLinkInterface.getInstance();
@@ -40,8 +44,7 @@ public class NetworkInterface implements Runnable {
 		this.receiver = new Thread(this);
 		this.mySelf = new RoutingEntry();
 		this.sorter = new Sorter(this.neighbors);
-		this.parent = null;
-		this.app = null;
+		this.log = link.getLog();
 	}
 	
 	public static NetworkInterface getInstance() {
@@ -54,19 +57,22 @@ public class NetworkInterface implements Runnable {
 		message = app.processRoutingMessage(message, address);
 		
 		int messageLength = 1 + message.getLength();
-		
 		PacketWriter writer = link.getWriter();
-		writer.setSourceAddress(getAddress());
-		writer.setDestinationAddress(address);
-		writer.setLength(messageLength);
-		writer.setNext(type);
-		message.writeInto(writer);
-		Profiler.getInstance().transmiting(messageLength);
-		return link.flush();
+		
+		synchronized (writer) {
+			writer.setSourceAddress(getAddress());
+			writer.setDestinationAddress(address);
+			writer.setLength(messageLength);
+			writer.setNext(type);
+			message.writeInto(writer);
+			Profiler.getInstance().transmiting(messageLength);
+			return link.flush();
+		}
 	}
 	
-	public void sendRoutingPacket(byte type, long address) {
-		sendPacket(type, address, mySelf);
+	public boolean sendRoutingPacket(byte type, long address) {
+		log.log(Logger.NET, "sending   to "+IEEEAddress.toDottedHex(address)+" "+(type == SYNC ? "sync" : "coord")+mySelf);
+		return sendPacket(type, address, mySelf);
 	}
 	
 	public boolean hasNoRoute() {
@@ -76,7 +82,7 @@ public class NetworkInterface implements Runnable {
 	public boolean sendDataPacket(Message message) {
 		if (hasNoRoute())
 			return false;
-		
+		log.log(Logger.NET, "sending   to "+IEEEAddress.toDottedHex(parent.getAddress())+" data"+message);
 		return sendPacket(DATA, parent.getAddress(), message);
 	}
 	
@@ -87,18 +93,24 @@ public class NetworkInterface implements Runnable {
 			neighbors.addElement(entry);
 		} else {
 			neighbors.setElementAt(entry, index);
+			log.log(Logger.NET, "neighbor "+IEEEAddress.toDottedHex(entry.getAddress()));
 		}
 	}
 	
 	private void resolveBelongToBackbone() {
 		int rules = app.getRoutingRules(neighbors, parent);
 
-		if (rules < 0)
-			rules = 0;
+		if (rules < ROUTING_RULES_MIN)
+			rules = ROUTING_RULES_MIN;
 		else if (rules > ROUTING_RULES_MAX)
 			rules = ROUTING_RULES_MAX;
 
-		mySelf.setCoord(random.nextInt(ROUTING_RULES_MAX) < rules);
+		boolean coord = random.nextInt(ROUTING_RULES_MAX) < rules;
+		if (coord) {
+			app.joinedToBackbone();
+			log.log(Logger.NET, "backbone");
+		}
+		mySelf.setCoord(coord);
 	}
 	
 	protected int getBackoffTime() {
@@ -114,6 +126,7 @@ public class NetworkInterface implements Runnable {
 		
 		sendRoutingPacket(SYNC, BROADCAST);
 		app.startRoutingCycle(mySelf.getCycle(), mySelf.isCoord());
+		log.log(Logger.NET, "cycle");
 	}
 	
 	private boolean startNewCycle(RoutingEntry sync) {
@@ -128,6 +141,7 @@ public class NetworkInterface implements Runnable {
 		
 		sendRoutingPacket(SYNC, BROADCAST);
 		app.startRoutingCycle(mySelf.getCycle(), mySelf.isCoord());
+		log.log(Logger.NET, "cycle");
 		waitNotInterrupted(getBackoffTime());
 		
 		return true;
@@ -136,45 +150,47 @@ public class NetworkInterface implements Runnable {
 	private void refreshParent() {
 		sorter.sort(mySelf.isCoord());
 		parent = (RoutingEntry)neighbors.elementAt(0);
+		log.log(Logger.NET, "parent "+ IEEEAddress.toDottedHex(parent.getAddress()));
 	}
 	
-	private boolean doesParentBelongToBackbone() {
+	private boolean hasRoute() {
+		refreshParent();
+		
 		return parent.isCoord();
 	}
 	
-	private boolean remainWithoutRoute() {
-		refreshParent();
-		
-		return doesParentBelongToBackbone();
-	}
-
-	private void forceRouteThrougth(byte type, RoutingEntry entry) {
-		entry.setCoord(true);
-		sendRoutingPacket(type, entry.getAddress());
-	}
-	
 	private void forceRouteThrougthMySelf() {
-		forceRouteThrougth(SYNC, mySelf);
+		mySelf.setCoord(true);
+		sendRoutingPacket(SYNC, BROADCAST);
 		app.joinedToBackbone();
 	}
 	
 	private void forceRouteThrougthParent() {
-		forceRouteThrougth(COORD, parent);
+		parent.setCoord(true);
+		sendRoutingPacket(COORD, parent.getAddress());
 	}
 	
-	private void handleSync(RoutingEntry sync) {
+	private void handleSync(PacketReader reader) {
+		RoutingEntry sync = new RoutingEntry();
+		sync.readFrom(reader);
+		log.log(Logger.NET, "arrived from "+IEEEAddress.toDottedHex(reader.getSourceAddress())+" sync"+sync);
+		
 		addNeighbor(sync);
 		
 		if (!startNewCycle(sync))
 			return;
 		
-		if (!remainWithoutRoute())
+		if (hasRoute())
 			return;
 		
 		forceRouteThrougthParent();
 	}
 
-	private void handleCoord(RoutingEntry coord) {
+	private void handleCoord(PacketReader reader) {
+		RoutingEntry coord = new RoutingEntry();
+		coord.readFrom(reader);
+		log.log(Logger.NET, "arrived from "+IEEEAddress.toDottedHex(reader.getSourceAddress())+" coord"+coord);
+		
 		addNeighbor(coord);
 		
 		forceRouteThrougthMySelf();
@@ -187,6 +203,8 @@ public class NetworkInterface implements Runnable {
 		
 		if (hasNoRoute() || message == null)
 			return;
+		
+		log.log(Logger.NET, "frwrdng   to "+IEEEAddress.toDottedHex(parent.getAddress())+" data"+message);
 		
 		sendDataPacket(message);
 	}
@@ -205,19 +223,23 @@ public class NetworkInterface implements Runnable {
 	}
 	
 	public void run() {
+		
 		Profiler.getInstance().startProcessing();
 		
 		while (waitNotInterrupted(1)) {
-			PacketReader reader = link.getReader();
-			Profiler.getInstance().receiving(reader.getLength());
-			byte packetType = reader.getNextByte();
-			
-			if (packetType == SYNC) {
-				handleSync(new RoutingEntry(reader));
-			} else if (packetType == COORD) {
-				handleCoord(new RoutingEntry(reader));
-			} else {
-				handleData(reader);
+			log.log(Logger.NET, "waiting");
+			PacketReader reader = link.getReader();	
+			synchronized (reader) {
+				Profiler.getInstance().receiving(reader.getLength());
+				byte packetType = reader.getNextByte();
+				
+				if (packetType == SYNC) {
+					handleSync(reader);
+				} else if (packetType == COORD) {
+					handleCoord(reader);
+				} else {
+					handleData(reader);
+				}
 			}
 		}
 		
@@ -238,10 +260,18 @@ public class NetworkInterface implements Runnable {
 	}
 	
 	public long getAddress() {
-		return RadioFactory.getRadioPolicyManager().getIEEEAddress();
+		return link.getAddress();
 	}
 	
 	public void setApp(Application app) {
 		this.app = app;
+	}
+
+	public RoutingEntry getState() {
+		return mySelf;
+	}
+
+	public Logger getLog() {
+		return log;
 	}
 }

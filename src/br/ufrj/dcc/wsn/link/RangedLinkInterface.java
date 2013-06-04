@@ -2,13 +2,14 @@ package br.ufrj.dcc.wsn.link;
 
 import java.util.Random;
 
-import com.sun.spot.peripheral.radio.RadioFactory;
-import com.sun.spot.util.IEEEAddress;
+import br.ufrj.dcc.wsn.util.Logger;
 
 public class RangedLinkInterface implements ILinkInterface {
 	private static Random random = new Random(System.currentTimeMillis());
 	private static RangedLinkInterface instance;
 	private ILinkInterface link;
+	private Logger log;
+	
 	private int range;
 	private int position;
 
@@ -20,10 +21,11 @@ public class RangedLinkInterface implements ILinkInterface {
 	
 	private RangedLinkInterface() {
 		this.link = LinkInterface.getInstance();
+		this.log = link.getLog();
 		this.range = 50;
 		this.position = random.nextInt(100);
 		
-		System.out.println(IEEEAddress.toDottedHex(RadioFactory.getRadioPolicyManager().getIEEEAddress()) + " born in "+position);
+		log.info("at "+position);
 	}
 
 	private boolean isInRange(int position) {
@@ -32,18 +34,12 @@ public class RangedLinkInterface implements ILinkInterface {
 	
 	public PacketReader getReader() {
 		PacketReader reader;
+		int position;
 		
-		while (true) {
-			reader = link.getReader();
-			int position = reader.getNextInt();
-			
-			if (isInRange(position))
-				break;
-			
-			System.out.println(IEEEAddress.toDottedHex(reader.getSourceAddress()) + "is out of range");
-		}
-		
-		System.out.println("Receiving from " + IEEEAddress.toDottedHex(reader.getSourceAddress()));
+		do {
+			reader  = link.getReader();
+			position = reader.getNextInt();
+		} while (isInRange(position));
 		
 		return reader;
 	}
@@ -56,5 +52,13 @@ public class RangedLinkInterface implements ILinkInterface {
 
 	public boolean flush() {
 		return link.flush();
+	}
+
+	public long getAddress() {
+		return link.getAddress();
+	}
+
+	public Logger getLog() {
+		return link.getLog();
 	}
 }

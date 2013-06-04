@@ -5,7 +5,6 @@ import br.ufrj.dcc.wsn.link.PacketWriter;
 
 
 public class RoutingEntry extends Message {
-	private long source;
 	private byte cycle;
 	private byte hops;
 	private boolean coord;
@@ -15,12 +14,8 @@ public class RoutingEntry extends Message {
 		
 	}
 	
-	public RoutingEntry(PacketReader reader) {
-		super(reader);
-		readFrom(reader);
-	}
-	
 	public void readFrom(PacketReader reader) {
+		setAddress(reader.getSourceAddress());
 		cycle = reader.getNextByte();
 		hops = reader.getNextByte();
 		coord = reader.getNextBoolean();
@@ -63,11 +58,11 @@ public class RoutingEntry extends Message {
 	}
 	
 	public String toString() {
-		return 	cycle + "," + hops + "," + coord + "," + energy;
+		return 	"("+cycle + "," + hops + "," + coord + "," + energy+")";
 	}
 	
 	public boolean equals(Object obj) {
-		return source == ((RoutingEntry)obj).source;
+		return getAddress() == ((RoutingEntry)obj).getAddress();
 	}
 
 	public byte getCycle() {

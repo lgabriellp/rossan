@@ -6,20 +6,24 @@ import br.ufrj.dcc.wsn.network.proc.Node;
 
 
 public class HeatSensorNode extends Node {
+	private HeatMessage message;
 	private short temperature;
 	
 	public HeatSensorNode() {
-		super("SensorNode");
+		super("HeatSensorNode");
+		message = new HeatMessage();
 		temperature = 0;
 	}
 
 	public Message processDataMessage(PacketReader reader) {
-		log.info("PrepareDataMessage");
-		return new HeatMessage(reader);
+		message.readFrom(reader);
+		log.info("ProcessDataMessage");
+		return message;
 	}
 	
 	protected boolean mainStep() {
-		send(new HeatMessage(temperature++));
-		return waitNotInterrupted(7500);
+		message.setTemperature(temperature++);
+		send(message);
+		return waitNotInterrupted(1000);
 	}
 }

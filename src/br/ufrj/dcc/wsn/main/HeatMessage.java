@@ -8,13 +8,16 @@ import br.ufrj.dcc.wsn.network.proc.Message;
 public class HeatMessage extends Message {
 	private short temperature;
 	
-	public HeatMessage(short temperature) {
-		this.temperature = temperature;
+	public HeatMessage() {
+		this.temperature = 0;
 	}
 	
-	public HeatMessage(PacketReader reader) {
-		super(reader);
-		readFrom(reader);
+	public short getTemperature() {
+		return temperature;
+	}
+
+	public void setTemperature(short temperature) {
+		this.temperature = temperature;
 	}
 
 	public void readFrom(PacketReader reader) {
@@ -22,12 +25,11 @@ public class HeatMessage extends Message {
 	}
 	
 	public void writeInto(PacketWriter writer) {
-		writer.setSourceAddress(getAddress());
 		writer.setNext(temperature);
 	}
 
 	public String toString() {
-		return "heat," + temperature;
+		return "(heat," + temperature+")";
 	}
 
 	public int getLength() {

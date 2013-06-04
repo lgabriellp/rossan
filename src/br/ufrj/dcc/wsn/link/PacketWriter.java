@@ -58,7 +58,7 @@ public class PacketWriter {
 	}
 	
 	public void setLength(int capacity) {
-		packet.setMACPayloadLength(capacity);
+		packet.setMACPayloadLength(capacity + 4);
 	}
 	
 	public void copyPayload(PacketReader reader) {

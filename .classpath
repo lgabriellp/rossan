@@ -7,5 +7,7 @@
 	<classpathentry kind="lib" path="/opt/SunSPOT/sdk-red-100104/lib/spotlib_device.jar"/>
 	<classpathentry kind="lib" path="/opt/SunSPOT/sdk-red-100104/lib/squawk_common.jar"/>
 	<classpathentry kind="lib" path="/opt/SunSPOT/sdk-red-100104/lib/squawk_device.jar"/>
+	<classpathentry kind="lib" path="/opt/SunSPOT/sdk-red-100104/lib/transducer_device.jar"/>
+	<classpathentry kind="lib" path="/opt/SunSPOT/sdk-red-100104/lib/multihop_common.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

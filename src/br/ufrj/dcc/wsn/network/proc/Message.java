@@ -6,12 +6,8 @@ import br.ufrj.dcc.wsn.link.PacketWriter;
 public abstract class Message {
 	private long address;
 
-	protected Message() {
-		address = 0;
-	}
+	public Message() {
 	
-	protected Message(PacketReader reader) {
-		address = reader.getSourceAddress();
 	}
 	
 	public void setAddress(long address) {

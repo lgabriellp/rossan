@@ -10,6 +10,10 @@ public class PacketReader {
 		this.packet = RadioPacket.getDataPacket();
 	}
 	
+	public PacketReader(RadioPacket packet) {
+		this.packet = packet;
+	}
+	
 	public RadioPacket getPacket() {
 		return packet;
 	}
@@ -25,7 +29,7 @@ public class PacketReader {
 	}
 	
 	public boolean getNextBoolean() {
-		return getNextByte() != 0 ? true : false;;
+		return getNextByte() != 0 ? true : false;
 	}
 
 	public short getNextShort() {

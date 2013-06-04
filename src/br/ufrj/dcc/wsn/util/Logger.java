@@ -5,7 +5,10 @@ public class Logger {
 	public static final int INFO = 1 << 0;
 	public static final int WARNING = 1 << 1;
 	public static final int DEBUG = 1 << 2;
-	
+	public static final int APP = 1 << 3;
+	public static final int NET = 1 << 4;
+	public static final int LINK = 1 << 5;
+
 	private String prefix;
 	private int level;
 
@@ -16,6 +19,10 @@ public class Logger {
 	
 	public void setLevel(int level) {
 		this.level = level;
+	}
+	
+	public int getLevel() {
+		return this.level;
 	}
 	
 	public void log(int level, String message) {

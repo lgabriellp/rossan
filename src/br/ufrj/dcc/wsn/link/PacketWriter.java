@@ -58,6 +58,7 @@ public class PacketWriter {
 	}
 	
 	public void setLength(int capacity) {
+		// + 4 necessario para alocar espaco suficiente para o cabecalho
 		packet.setMACPayloadLength(capacity + 4);
 	}
 	

@@ -12,6 +12,7 @@ public class RangedLinkInterface implements ILinkInterface {
 	
 	private int range;
 	private int position;
+	private int area;
 
 	public static ILinkInterface getInstance() {
 		if (instance == null)
@@ -22,8 +23,10 @@ public class RangedLinkInterface implements ILinkInterface {
 	private RangedLinkInterface() {
 		this.link = LinkInterface.getInstance();
 		this.log = link.getLog();
-		this.range = 50;
-		this.position = random.nextInt(100);
+	
+		this.area = 1000;
+		this.range = 200;
+		this.position = random.nextInt(area);
 		
 		log.info("at "+position);
 	}

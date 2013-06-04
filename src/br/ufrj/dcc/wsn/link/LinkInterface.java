@@ -25,18 +25,18 @@ public class LinkInterface implements ILinkInterface {
 		this.reader = new PacketReader();
 		this.writer = new PacketWriter();
 		this.log = new Logger(IEEEAddress.toDottedHex(getAddress()));
-		log.setLevel(Logger.NET);
+		log.setLevel(Logger.NET | Logger.LINK);
 	}
 	
 	public PacketReader getReader() {
 		mac.mcpsDataIndication(reader.getPacket());
 		reader.setPosition(0);
-		System.out.print("reading ");
+		String text = "reading ";
 		for (int i = 0; i < reader.getLength(); i++) {
-			System.out.print(reader.getNextByte());
-			System.out.print(' ');
+			text += Integer.toHexString(reader.getNextByte() & 0xFF);
+			text += ' ';
 		}
-		System.out.println();
+		log.log(Logger.LINK, text);
 		reader.setPosition(0);
 		return reader;
 	}
@@ -49,12 +49,12 @@ public class LinkInterface implements ILinkInterface {
 	public boolean flush() {
 		PacketReader reader = new PacketReader(writer.getPacket());
 		reader.setPosition(0);
-		System.out.print("writing ");
+		String text = "writing ";
 		for (int i = 0; i < reader.getLength(); i++) {
-			System.out.print(reader.getNextByte());
-			System.out.print(' ');
+			text += Integer.toHexString(reader.getNextByte() & 0xFF);
+			text += ' ';
 		}
-		System.out.println();
+		log.log(Logger.LINK, text);
 		return mac.mcpsDataRequest(writer.getPacket()) == I802_15_4_MAC.SUCCESS; 
 	}
 

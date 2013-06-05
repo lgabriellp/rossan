@@ -28,7 +28,7 @@ public class RangedLinkInterface implements ILinkInterface {
 		this.range = 200;
 		this.position = random.nextInt(area);
 		
-		log.info("at "+position);
+		log.log(Logger.LINK, "position "+position+" range "+range);
 	}
 
 	private boolean isInRange(int position) {

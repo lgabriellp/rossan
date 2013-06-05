@@ -8,6 +8,7 @@ public class Logger {
 	public static final int APP = 1 << 3;
 	public static final int NET = 1 << 4;
 	public static final int LINK = 1 << 5;
+	public static final int DIGEST = 1 << 6;
 
 	private String prefix;
 	private int level;

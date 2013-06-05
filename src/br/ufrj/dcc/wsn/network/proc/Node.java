@@ -90,6 +90,10 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 		return router.getAddress();
 	}
 	
+	public boolean hasNoRoute() {
+		return router.hasNoRoute();
+	}
+	
 	public void run() {
 		while (mainStep());
 	}

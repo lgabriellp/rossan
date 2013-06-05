@@ -11,7 +11,6 @@ import br.ufrj.dcc.wsn.profile.Profiler;
 import br.ufrj.dcc.wsn.util.Logger;
 import br.ufrj.dcc.wsn.util.Sorter;
 
-import com.sun.spot.peripheral.Spot;
 import com.sun.spot.util.IEEEAddress;
 
 
@@ -82,7 +81,12 @@ public class NetworkInterface implements Runnable {
 	public boolean sendDataPacket(Message message) {
 		if (hasNoRoute())
 			return false;
+		
 		log.log(Logger.NET, "sending   to "+IEEEAddress.toDottedHex(parent.getAddress())+" data"+message);
+		log.log(Logger.DIGEST, 	"digest "+
+								mySelf+","+
+								message+","+
+								IEEEAddress.toDottedHex(parent.getAddress()));
 		return sendPacket(DATA, parent.getAddress(), message);
 	}
 	
@@ -150,7 +154,7 @@ public class NetworkInterface implements Runnable {
 	private void refreshParent() {
 		sorter.sort(mySelf.isCoord());
 		parent = (RoutingEntry)neighbors.elementAt(0);
-		log.log(Logger.NET, "parent "+ IEEEAddress.toDottedHex(parent.getAddress()));
+		log.log(Logger.NET, "cycle "+mySelf.getCycle()+" parent "+ IEEEAddress.toDottedHex(parent.getAddress()));
 	}
 	
 	private boolean hasRoute() {
@@ -254,9 +258,22 @@ public class NetworkInterface implements Runnable {
 		receiver.interrupt();
 	}
 
-	public short getSpentEnergy() {
-		return (short)Spot.getInstance().getPowerController().getBattery().getBatteryLevel();
-		//return Profiler.getInstance().getSpentEnergy();
+	public short getSpentEnergy() {		
+		//return (short)Spot.getInstance().getPowerController().getBattery().getBatteryLevel();
+		
+		//Retorna o (64 - log2(energia gasta))
+		
+		long energy = Profiler.getInstance().getSpentEnergy();
+		short i;
+		
+		for (i = 63; i >= 0; --i) {
+			if ((energy & (1 << i)) == (1 << i))
+				break;
+		}
+		
+		log.log(Logger.NET, "energy "+energy+" log "+(64-i));
+		
+		return (short) (64 - i);
 	}
 	
 	public long getAddress() {

@@ -37,7 +37,7 @@ public class Profiler {
 	}
 	
 	public long getSpentEnergy() {
-		return 0;
+		return transmitedBytes + receivedBytes;
 	}
 	
 	public long getProcessingTimeMs() {

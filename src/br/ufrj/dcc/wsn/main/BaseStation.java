@@ -8,11 +8,11 @@ import br.ufrj.dcc.wsn.network.proc.Node;
 import br.ufrj.dcc.wsn.util.Logger;
 
 
-public class AccessPointNode extends Node {
+public class BaseStation extends Node {
 	private HeatMessage message;
 	private int cycle;
 	
-	public AccessPointNode() {
+	public BaseStation() {
 		super("AccessPoint");
 		message = new HeatMessage();
 		cycle = 1;

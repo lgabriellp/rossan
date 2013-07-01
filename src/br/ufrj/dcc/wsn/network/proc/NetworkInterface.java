@@ -280,7 +280,7 @@ public class NetworkInterface implements Runnable {
 		
 		return (short) (64 - i);
         */
-        return 1000 - energy;
+        return ((short)10000 - 1 << energy/100);
 	}
 	
 	public long getAddress() {

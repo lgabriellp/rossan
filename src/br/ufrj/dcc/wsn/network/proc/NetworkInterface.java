@@ -165,8 +165,10 @@ public class NetworkInterface implements Runnable {
 		app.joinedToBackbone();
 
 		log.log(Logger.DIGEST, 	"digest "+
-				mySelf+","+
-				parent+","+
+				mySelf.getCycle()+","+
+                mySelf.getHops()+","+
+                mySelf.isCoord()+","+
+                mySelf.getEnergy()+","+
 				IEEEAddress.toDottedHex(parent.getAddress()));
 	}
 	
@@ -280,7 +282,11 @@ public class NetworkInterface implements Runnable {
 		
 		return (short) (64 - i);
         */
-        return ((short)(10000 - (1 << (energy/100))));
+        energy = 10000 - (1 << (energy/100));
+        if (energy < 0)
+            energy = 0;
+
+        return (short)energy;
 	}
 	
 	public long getAddress() {

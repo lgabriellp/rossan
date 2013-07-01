@@ -163,11 +163,21 @@ public class NetworkInterface implements Runnable {
 		mySelf.setCoord(true);
 		sendRoutingPacket(SYNC, BROADCAST);
 		app.joinedToBackbone();
+
+		log.log(Logger.DIGEST, 	"digest "+
+				mySelf+","+
+				parent+","+
+				IEEEAddress.toDottedHex(parent.getAddress()));
 	}
 	
 	private void forceRouteThrougthParent() {
 		parent.setCoord(true);
 		sendRoutingPacket(COORD, parent.getAddress());
+
+		log.log(Logger.DIGEST, 	"digest "+
+				mySelf+","+
+				parent+","+
+				IEEEAddress.toDottedHex(parent.getAddress()));
 	}
 	
 	private void handleSync(PacketReader reader) {
@@ -182,11 +192,6 @@ public class NetworkInterface implements Runnable {
 		
 		if (hasRoute())
 			return;
-		
-		log.log(Logger.DIGEST, 	"digest "+
-				mySelf+","+
-				parent+","+
-				IEEEAddress.toDottedHex(parent.getAddress()));
 		
 		forceRouteThrougthParent();
 	}

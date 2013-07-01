@@ -83,10 +83,6 @@ public class NetworkInterface implements Runnable {
 			return false;
 		
 		log.log(Logger.NET, "sending   to "+IEEEAddress.toDottedHex(parent.getAddress())+" data"+message);
-		log.log(Logger.DIGEST, 	"digest "+
-								mySelf+","+
-								message+","+
-								IEEEAddress.toDottedHex(parent.getAddress()));
 		return sendPacket(DATA, parent.getAddress(), message);
 	}
 	
@@ -186,6 +182,11 @@ public class NetworkInterface implements Runnable {
 		
 		if (hasRoute())
 			return;
+		
+		log.log(Logger.DIGEST, 	"digest "+
+				mySelf+","+
+				parent+","+
+				IEEEAddress.toDottedHex(parent.getAddress()));
 		
 		forceRouteThrougthParent();
 	}

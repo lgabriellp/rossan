@@ -26,6 +26,6 @@ public class BaseStation extends Node {
 	
 	protected boolean mainStep() {
 		getRoutingInterface().startNewCycle(cycle++);
-		return waitNotInterrupted(25000);
+		return waitNotInterrupted(3*getInterval());
 	}
 }

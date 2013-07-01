@@ -8,20 +8,23 @@ import javax.microedition.midlet.MIDletStateChangeException;
 import br.ufrj.dcc.wsn.link.PacketReader;
 import br.ufrj.dcc.wsn.util.Logger;
 
+import com.sun.spot.peripheral.ISpot;
 import com.sun.spot.peripheral.Spot;
 import com.sun.spot.util.IEEEAddress;
 
 
 public abstract class Node extends MIDlet implements Application, Runnable {
-	private NetworkInterface router;
-	private Thread main;
+	private final NetworkInterface router;
+	private final Thread main;
 	protected final Logger log;
+	private final int interval;
 	
 	public Node(String name) {
-		System.out.println(getAppProperty("Position"));
-		Spot.getInstance().setPersistentProperty("Range", getAppProperty("Range"));
-		Spot.getInstance().setPersistentProperty("Position", getAppProperty("Position"));
+		ISpot spot = Spot.getInstance();
+		spot.setPersistentProperty("Range", getAppProperty("Range"));
+		spot.setPersistentProperty("Position", getAppProperty("Position"));
 		
+		this.interval = Integer.parseInt(getAppProperty("Interval"));
 		this.router = NetworkInterface.getInstance();
 		this.log = router.getLog();
 		this.main = new Thread(this);
@@ -93,6 +96,10 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	
 	public long getAddress() {
 		return router.getAddress();
+	}
+	
+	public int getInterval() {
+		return interval;
 	}
 	
 	public boolean hasNoRoute() {

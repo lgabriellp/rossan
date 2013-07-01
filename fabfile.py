@@ -25,6 +25,7 @@ env.spot_range = 10
 env.sensors = 5
 env.basestations = 1
 env.max_spot_midlets = 1
+env.interval = 1000
 
 env.midlet_templates = [
     {
@@ -64,6 +65,7 @@ def random_spot(id, **filters):
         "manifest_file": "resources/META-INF/manifest.mf".format(name),
         "position": random.randint(0, env.spots_area),
         "range": env.spot_range,
+        "interval": env.interval,
         "midlets": random_midlets(**filters),
     }
     return spot
@@ -77,12 +79,6 @@ def configure():
     random.seed(seed)
     print "Random seed is {0}".format(seed)
 
-    sensors = prompt("How many sensor midlets?", default=env.sensors,
-                          validate=int)
-    basestations = prompt("How many basestation midlets?",
-                          default=env.basestations, validate=int)
-    spot_range = prompt("What are the spot radiotransmission range?",
-                        default=env.spot_range, validate=float)
     env.run_midlets = repr(env.run_midlets).lower()
     env.keep_addresses = repr(env.keep_addresses).lower()
     env.virtual_spots = []

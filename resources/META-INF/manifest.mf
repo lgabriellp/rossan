@@ -2,6 +2,8 @@ MIDlet-Name: Rossan
 MIDlet-Version: 1.0.0
 MIDlet-Vendor: DCC-UFRJ
 MIDlet-1: , , br.ufrj.dcc.wsn.main.HeatSensorNode
-MIDlet-2: , , br.ufrj.dcc.wsn.main.AccessPointNode
+MIDlet-2: , , br.ufrj.dcc.wsn.main.BaseStation
 MicroEdition-Profile: IMP-1.0
 MicroEdition-Configuration: CLDC-1.1
+Position: 200
+Range: 100

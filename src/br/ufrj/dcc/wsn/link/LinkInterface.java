@@ -25,7 +25,7 @@ public class LinkInterface implements ILinkInterface {
 		this.reader = new PacketReader();
 		this.writer = new PacketWriter();
 		this.log = new Logger(IEEEAddress.toDottedHex(getAddress()));
-		log.setLevel(Logger.NET | Logger.LINK);
+		log.setLevel(Logger.DIGEST);
 	}
 	
 	public PacketReader getReader() {

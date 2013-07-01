@@ -24,7 +24,7 @@ public class HeatSensorNode extends Node {
 	protected boolean mainStep() {
 		message.setTemperature(temperature++);
 		message.setOrigin(getAddress());
-		send(message);
-		return waitNotInterrupted(2500);
+		return !send(message);
+		//return waitNotInterrupted(2500);
 	}
 }

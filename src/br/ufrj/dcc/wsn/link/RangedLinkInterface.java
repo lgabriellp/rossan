@@ -1,18 +1,17 @@
 package br.ufrj.dcc.wsn.link;
 
-import java.util.Random;
-
 import br.ufrj.dcc.wsn.util.Logger;
 
+import com.sun.spot.peripheral.ISpot;
+import com.sun.spot.peripheral.Spot;
+
 public class RangedLinkInterface implements ILinkInterface {
-	private static Random random = new Random(System.currentTimeMillis());
 	private static RangedLinkInterface instance;
 	private ILinkInterface link;
 	private Logger log;
 	
 	private int range;
 	private int position;
-	private int area;
 
 	public static ILinkInterface getInstance() {
 		if (instance == null)
@@ -23,10 +22,9 @@ public class RangedLinkInterface implements ILinkInterface {
 	private RangedLinkInterface() {
 		this.link = LinkInterface.getInstance();
 		this.log = link.getLog();
-	
-		this.area = 1000;
-		this.range = 200;
-		this.position = random.nextInt(area);
+		ISpot self = Spot.getInstance();
+		this.range = Integer.parseInt(self.getPersistentProperty("Range"));
+		this.position = Integer.parseInt(self.getPersistentProperty("Position"));
 		
 		log.log(Logger.LINK, "position "+position+" range "+range);
 	}

@@ -8,6 +8,7 @@ import javax.microedition.midlet.MIDletStateChangeException;
 import br.ufrj.dcc.wsn.link.PacketReader;
 import br.ufrj.dcc.wsn.util.Logger;
 
+import com.sun.spot.peripheral.Spot;
 import com.sun.spot.util.IEEEAddress;
 
 
@@ -17,6 +18,10 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	protected final Logger log;
 	
 	public Node(String name) {
+		System.out.println(getAppProperty("Position"));
+		Spot.getInstance().setPersistentProperty("Range", getAppProperty("Range"));
+		Spot.getInstance().setPersistentProperty("Position", getAppProperty("Position"));
+		
 		this.router = NetworkInterface.getInstance();
 		this.log = router.getLog();
 		this.main = new Thread(this);

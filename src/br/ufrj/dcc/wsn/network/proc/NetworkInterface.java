@@ -233,7 +233,6 @@ public class NetworkInterface implements Runnable {
 	}
 	
 	public void run() {
-		
 		Profiler.getInstance().startProcessing();
 		
 		while (waitNotInterrupted(1)) {
@@ -268,8 +267,8 @@ public class NetworkInterface implements Runnable {
 		//return (short)Spot.getInstance().getPowerController().getBattery().getBatteryLevel();
 		
 		//Retorna o (64 - log2(energia gasta))
-		
 		long energy = Profiler.getInstance().getSpentEnergy();
+		/*
 		short i;
 		
 		for (i = 63; i >= 0; --i) {
@@ -280,6 +279,8 @@ public class NetworkInterface implements Runnable {
 		log.log(Logger.NET, "energy "+energy+" log "+(64-i));
 		
 		return (short) (64 - i);
+        */
+        return 1000 - energy;
 	}
 	
 	public long getAddress() {

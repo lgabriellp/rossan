@@ -177,8 +177,10 @@ public class NetworkInterface implements Runnable {
 		sendRoutingPacket(COORD, parent.getAddress());
 
 		log.log(Logger.DIGEST, 	"digest "+
-				mySelf+","+
-				parent+","+
+				mySelf.getCycle()+","+
+                mySelf.getHops()+","+
+                mySelf.isCoord()+","+
+                mySelf.getEnergy()+","+
 				IEEEAddress.toDottedHex(parent.getAddress()));
 	}
 	

@@ -267,28 +267,14 @@ public class NetworkInterface implements Runnable {
 		receiver.interrupt();
 	}
 
-	public short getSpentEnergy() {		
-		//return (short)Spot.getInstance().getPowerController().getBattery().getBatteryLevel();
-		
-		//Retorna o (64 - log2(energia gasta))
+	public short getSpentEnergy() {
 		long energy = Profiler.getInstance().getSpentEnergy();
-		/*
-		short i;
-		
-		for (i = 63; i >= 0; --i) {
-			if ((energy & (1 << i)) == (1 << i))
-				break;
-		}
-		
-		log.log(Logger.NET, "energy "+energy+" log "+(64-i));
-		
-		return (short) (64 - i);
-        */
-        energy = 10000 - (1 << (energy/100));
-        if (energy < 0)
+        if (energy > Short.MAX_VALUE)
+            energy = Short.MAX_VALUE;
+        else if (energy < 0)
             energy = 0;
 
-        return (short)energy;
+        return (short)(Short.MAX_VALUE - energy);
 	}
 	
 	public long getAddress() {

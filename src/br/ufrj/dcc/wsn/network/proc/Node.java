@@ -18,11 +18,23 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	private final Thread main;
 	protected final Logger log;
 	private final int interval;
+	private ApplicationBehavior behavior;
 	
 	public Node(String name) {
+		System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAaa");
+		
 		ISpot spot = Spot.getInstance();
 		spot.setPersistentProperty("Range", getAppProperty("Range"));
 		spot.setPersistentProperty("Position", getAppProperty("Position"));
+		spot.setPersistentProperty("Behavior", getAppProperty("Behavior"));
+		
+		String behavior = getAppProperty("Behavior");
+		if (behavior.equalsIgnoreCase("nodedensity"))
+			this.behavior = new NodeDensityBehavior();
+		else if (behavior.equalsIgnoreCase("exponential"))
+			this.behavior = new ExponentialBehavior();
+		else
+			this.behavior = new DummyBehavior();
 		
 		this.interval = Integer.parseInt(getAppProperty("Interval"));
 		this.router = NetworkInterface.getInstance();
@@ -59,15 +71,18 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 			log.log(Logger.APP, "Neighbor: "+ IEEEAddress.toDottedHex(((RoutingEntry)neighbors.elementAt(i)).getAddress()));
 		}
 		log.log(Logger.APP, "parent: "+p);
-		return 0;
+		
+		return behavior.getRoutingRules(neighbors, parent);
 	}
 
 	public void startRoutingCycle(int cycle, boolean coord) {
 		log.log(Logger.APP, "StartingRoutingCycle cycle="+cycle+" coord="+coord);
+		behavior.startRoutingCycle(cycle, coord);
 	}
 
-	public void joinedToBackbone() {
+	public void joinedBackbone() {
 		log.log(Logger.APP, "JoinedToBackbone");
+		behavior.joinedBackbone();
 	}
 
 	public Message processRoutingMessage(Message message, long address) {

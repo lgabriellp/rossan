@@ -20,11 +20,11 @@ public class NetworkInterface implements Runnable {
 	public static final byte COORD = 2;
 	public static final byte DATA = 3;
 	public static final int BACKOFF_MAX_WAIT = 1000;
-	
-	private static final Random random = new Random();
 	public static final int ROUTING_RULES_MAX_EXP = 30;
 	public static final int ROUTING_RULES_MIN = 0;
-	public static final int ROUTING_RULES_MAX = 1 << 30;
+	public static final int ROUTING_RULES_MAX = 1 << ROUTING_RULES_MAX_EXP;
+	
+	private static final Random random = new Random();
 	private static NetworkInterface instance;
 
 	private final ILinkInterface link;
@@ -108,7 +108,7 @@ public class NetworkInterface implements Runnable {
 
 		boolean coord = random.nextInt(ROUTING_RULES_MAX) < rules;
 		if (coord) {
-			app.joinedToBackbone();
+			app.joinedBackbone();
 			log.log(Logger.NET, "backbone");
 		}
 		mySelf.setCoord(coord);
@@ -163,14 +163,19 @@ public class NetworkInterface implements Runnable {
 	private void forceRouteThrougthMySelf() {
 		mySelf.setCoord(true);
 		sendRoutingPacket(SYNC, BROADCAST);
-		app.joinedToBackbone();
-
+		app.joinedBackbone();
+		
+		String parentAddress = null;
+		if (parent != null)
+			parentAddress = IEEEAddress.toDottedHex(parent.getAddress());
+		
 		log.log(Logger.DIGEST, 	"digest "+
 				mySelf.getCycle()+","+
                 mySelf.getHops()+","+
                 mySelf.isCoord()+","+
                 mySelf.getEnergy()+","+
-				IEEEAddress.toDottedHex(parent.getAddress()));
+                Profiler.getInstance().getProcessingTimeMs()+","+
+				parentAddress);
 	}
 	
 	private void forceRouteThrougthParent() {

@@ -10,7 +10,7 @@ public interface Application {
 
 	public void startRoutingCycle(int cycle, boolean coord);
 	
-	public void joinedToBackbone();
+	public void joinedBackbone();
 
 	public Message processRoutingMessage(Message message, long address);
 

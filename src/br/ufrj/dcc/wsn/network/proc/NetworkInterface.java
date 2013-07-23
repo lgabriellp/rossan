@@ -20,10 +20,11 @@ public class NetworkInterface implements Runnable {
 	public static final byte COORD = 2;
 	public static final byte DATA = 3;
 	public static final int BACKOFF_MAX_WAIT = 1000;
-	public static final int ROUTING_RULES_MIN = 0;
-	public static final int ROUTING_RULES_MAX = 100;
 	
 	private static final Random random = new Random();
+	public static final int ROUTING_RULES_MAX_EXP = 30;
+	public static final int ROUTING_RULES_MIN = 0;
+	public static final int ROUTING_RULES_MAX = 1 << 30;
 	private static NetworkInterface instance;
 
 	private final ILinkInterface link;

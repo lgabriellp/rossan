@@ -36,12 +36,24 @@ public class Profiler {
 		transmitedBytes += bytes;
 	}
 	
-	public long getSpentEnergy() {
-		return transmitedBytes + receivedBytes;
+	public short getSpentEnergy() {
+		long energy = transmitedBytes + receivedBytes;
+		
+		if (energy > Short.MAX_VALUE)
+            energy = Short.MAX_VALUE;
+        else if (energy < 0)
+            energy = 0;
+		
+		return (short)(100 * (Short.MAX_VALUE - energy)/Short.MAX_VALUE);
 	}
 	
-	public long getProcessingTimeMs() {
-		return processingTimeMs;
+	public short getProcessingTimeMs() {
+		if (processingTimeMs > Short.MAX_VALUE)
+			processingTimeMs = Short.MAX_VALUE;
+		else if (processingTimeMs < 0)
+			processingTimeMs = 0;
+		
+		return (short)(100 * processingTimeMs / Short.MAX_VALUE);
 	}
 
 	public long getReceivedBytes() {

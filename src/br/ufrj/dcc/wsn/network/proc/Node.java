@@ -21,17 +21,15 @@ public abstract class Node extends MIDlet implements Application, Runnable {
 	private ApplicationBehavior behavior;
 	
 	public Node(String name) {
-		System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAaa");
-		
 		ISpot spot = Spot.getInstance();
 		spot.setPersistentProperty("Range", getAppProperty("Range"));
 		spot.setPersistentProperty("Position", getAppProperty("Position"));
 		spot.setPersistentProperty("Behavior", getAppProperty("Behavior"));
 		
-		String behavior = getAppProperty("Behavior");
-		if (behavior.equalsIgnoreCase("nodedensity"))
+		int behavior = Integer.parseInt(getAppProperty("Behavior"));
+		if (behavior == 0)
 			this.behavior = new NodeDensityBehavior();
-		else if (behavior.equalsIgnoreCase("exponential"))
+		else if (behavior == 1)
 			this.behavior = new ExponentialBehavior();
 		else
 			this.behavior = new DummyBehavior();

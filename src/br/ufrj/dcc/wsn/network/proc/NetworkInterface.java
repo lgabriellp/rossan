@@ -83,7 +83,18 @@ public class NetworkInterface implements Runnable {
 		if (hasNoRoute())
 			return false;
 		
-		log.log(Logger.NET, "sending   to "+IEEEAddress.toDottedHex(parent.getAddress())+" data"+message);
+		String parentAddress = null;
+		if (parent != null)
+			parentAddress = IEEEAddress.toDottedHex(parent.getAddress());
+		
+		log.log(Logger.DIGEST, 	"digest "+
+				mySelf.getCycle()+","+
+                mySelf.getHops()+","+
+                mySelf.isCoord()+","+
+                mySelf.getEnergy()+","+
+                Profiler.getInstance().getProcessingTimeMs()+","+
+				parentAddress);
+		
 		return sendPacket(DATA, parent.getAddress(), message);
 	}
 	
@@ -164,30 +175,11 @@ public class NetworkInterface implements Runnable {
 		mySelf.setCoord(true);
 		sendRoutingPacket(SYNC, BROADCAST);
 		app.joinedBackbone();
-		
-		String parentAddress = null;
-		if (parent != null)
-			parentAddress = IEEEAddress.toDottedHex(parent.getAddress());
-		
-		log.log(Logger.DIGEST, 	"digest "+
-				mySelf.getCycle()+","+
-                mySelf.getHops()+","+
-                mySelf.isCoord()+","+
-                mySelf.getEnergy()+","+
-                Profiler.getInstance().getProcessingTimeMs()+","+
-				parentAddress);
 	}
 	
 	private void forceRouteThrougthParent() {
 		parent.setCoord(true);
 		sendRoutingPacket(COORD, parent.getAddress());
-
-		log.log(Logger.DIGEST, 	"digest "+
-				mySelf.getCycle()+","+
-                mySelf.getHops()+","+
-                mySelf.isCoord()+","+
-                mySelf.getEnergy()+","+
-				IEEEAddress.toDottedHex(parent.getAddress()));
 	}
 	
 	private void handleSync(PacketReader reader) {
@@ -274,13 +266,7 @@ public class NetworkInterface implements Runnable {
 	}
 
 	public short getSpentEnergy() {
-		long energy = Profiler.getInstance().getSpentEnergy();
-        if (energy > Short.MAX_VALUE)
-            energy = Short.MAX_VALUE;
-        else if (energy < 0)
-            energy = 0;
-
-        return (short)(Short.MAX_VALUE - energy);
+		return Profiler.getInstance().getSpentEnergy();
 	}
 	
 	public long getAddress() {

@@ -4,7 +4,10 @@ import com.sun.spot.util.IEEEAddress;
 
 import br.ufrj.dcc.wsn.link.PacketReader;
 import br.ufrj.dcc.wsn.network.proc.Message;
+import br.ufrj.dcc.wsn.network.proc.NetworkInterface;
 import br.ufrj.dcc.wsn.network.proc.Node;
+import br.ufrj.dcc.wsn.network.proc.RoutingEntry;
+import br.ufrj.dcc.wsn.profile.Profiler;
 import br.ufrj.dcc.wsn.util.Logger;
 
 
@@ -20,7 +23,17 @@ public class BaseStation extends Node {
 	
 	public Message processDataMessage(PacketReader reader) {
 		message.readFrom(reader);
-		log.log(Logger.NET, "arrived from "+IEEEAddress.toDottedHex(reader.getSourceAddress())+" data"+message);
+		
+		RoutingEntry mySelf = getRoutingInterface().getState();
+		
+		log.log(Logger.DIGEST, 	"root digest "+
+				mySelf.getCycle()+","+
+                mySelf.getHops()+","+
+                mySelf.isCoord()+","+
+                mySelf.getEnergy()+","+
+                Profiler.getInstance().getProcessingTimeMs()+","+
+				IEEEAddress.toDottedHex(NetworkInterface.BROADCAST));
+		
 		return null;
 	}
 	

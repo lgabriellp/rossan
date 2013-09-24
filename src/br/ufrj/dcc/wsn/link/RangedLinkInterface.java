@@ -29,8 +29,8 @@ public class RangedLinkInterface implements ILinkInterface {
 		log.log(Logger.LINK, "position "+position+" range "+range);
 	}
 
-	private boolean isInRange(int position) {
-		return Math.abs(this.position - position) <= range;
+	private boolean notInRange(int position) {
+		return Math.abs(this.position - position) > range;
 	}
 	
 	public PacketReader getReader() {
@@ -40,7 +40,7 @@ public class RangedLinkInterface implements ILinkInterface {
 		do {
 			reader  = link.getReader();
 			position = reader.getNextInt();
-		} while (isInRange(position));
+		} while (notInRange(position));
 		
 		return reader;
 	}

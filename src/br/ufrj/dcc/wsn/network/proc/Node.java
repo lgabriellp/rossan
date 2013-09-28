@@ -6,6 +6,10 @@ import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
 
 import br.ufrj.dcc.wsn.link.PacketReader;
+import br.ufrj.dcc.wsn.network.proc.behavior.ApplicationBehavior;
+import br.ufrj.dcc.wsn.network.proc.behavior.DummyBehavior;
+import br.ufrj.dcc.wsn.network.proc.behavior.ExponentialBehavior;
+import br.ufrj.dcc.wsn.network.proc.behavior.NodeDensityBehavior;
 import br.ufrj.dcc.wsn.util.Logger;
 
 import com.sun.spot.peripheral.ISpot;

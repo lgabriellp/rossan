@@ -1,6 +1,9 @@
-package br.ufrj.dcc.wsn.network.proc;
+package br.ufrj.dcc.wsn.network.proc.behavior;
 
 import java.util.Vector;
+
+import br.ufrj.dcc.wsn.network.proc.NetworkInterface;
+import br.ufrj.dcc.wsn.network.proc.RoutingEntry;
 
 public class NodeDensityBehavior implements ApplicationBehavior {
 

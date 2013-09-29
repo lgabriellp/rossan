@@ -1,5 +1,7 @@
 package br.ufrj.dcc.wsn.link;
 
+import java.util.Random;
+
 import br.ufrj.dcc.wsn.util.Logger;
 
 import com.sun.spot.peripheral.radio.I802_15_4_MAC;
@@ -8,6 +10,8 @@ import com.sun.spot.util.IEEEAddress;
 
 public class LinkInterface implements ILinkInterface {
 	private static ILinkInterface instance;
+	private static final Random random = new Random();
+	private static final int BIT_ERROR_INTERVAL = 10000;
 	
 	private final I802_15_4_MAC mac;
 	private final PacketReader reader;
@@ -31,13 +35,6 @@ public class LinkInterface implements ILinkInterface {
 	public PacketReader getReader() {
 		mac.mcpsDataIndication(reader.getPacket());
 		reader.setPosition(0);
-		String text = "reading ";
-		for (int i = 0; i < reader.getLength(); i++) {
-			text += Integer.toHexString(reader.getNextByte() & 0xFF);
-			text += ' ';
-		}
-		log.log(Logger.LINK, text);
-		reader.setPosition(0);
 		return reader;
 	}
 	
@@ -46,16 +43,20 @@ public class LinkInterface implements ILinkInterface {
 		return writer;
 	}
 	
-	public boolean flush() {
-		PacketReader reader = new PacketReader(writer.getPacket());
-		reader.setPosition(0);
-		String text = "writing ";
-		for (int i = 0; i < reader.getLength(); i++) {
-			text += Integer.toHexString(reader.getNextByte() & 0xFF);
-			text += ' ';
+	private boolean anyBitError() {
+		for (int k = 0; k < writer.getPacket().getMACPayloadLength(); k++) {
+			if (random.nextInt(BIT_ERROR_INTERVAL) == 0)
+				return true;
 		}
-		log.log(Logger.LINK, text);
-		return mac.mcpsDataRequest(writer.getPacket()) == I802_15_4_MAC.SUCCESS; 
+		return false;
+	}
+	
+	public boolean flush() {
+		if (anyBitError())
+			return false;
+		
+		while (mac.mcpsDataRequest(writer.getPacket()) != I802_15_4_MAC.SUCCESS);
+		return true;
 	}
 
 	public long getAddress() {

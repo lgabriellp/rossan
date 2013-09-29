@@ -20,6 +20,7 @@ public class NetworkInterface implements Runnable {
 	public static final byte COORD = 2;
 	public static final byte DATA = 3;
 	public static final int BACKOFF_MAX_WAIT = 1000;
+	public static final int MAX_RETRIES = 2;
 	public static final int ROUTING_RULES_MAX_EXP = 30;
 	public static final int ROUTING_RULES_MIN = 0;
 	public static final int ROUTING_RULES_MAX = 1 << ROUTING_RULES_MAX_EXP;
@@ -58,16 +59,25 @@ public class NetworkInterface implements Runnable {
 		
 		int messageLength = 1 + message.getLength();
 		PacketWriter writer = link.getWriter();
+		int tries = 0;
 		
 		synchronized (writer) {
-			writer.setSourceAddress(getAddress());
-			writer.setDestinationAddress(address);
-			writer.setLength(messageLength);
-			writer.setNext(type);
-			message.writeInto(writer);
-			Profiler.getInstance().transmiting(messageLength);
-			return link.flush();
+			do {
+				writer.setSourceAddress(getAddress());
+				writer.setDestinationAddress(address);
+				writer.setLength(messageLength);
+				writer.setNext(type);
+				message.writeInto(writer);
+				Profiler.getInstance().transmiting(messageLength);
+				
+				if (link.flush())
+					return true;
+				
+				tries++;
+			} while (tries < MAX_RETRIES);
 		}
+		
+		return false;
 	}
 	
 	public boolean sendRoutingPacket(byte type, long address) {

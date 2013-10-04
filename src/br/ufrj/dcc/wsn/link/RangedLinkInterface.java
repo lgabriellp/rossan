@@ -20,13 +20,13 @@ public class RangedLinkInterface implements ILinkInterface {
 	}
 	
 	private RangedLinkInterface() {
-		this.link = LinkInterface.getInstance();
-		this.log = link.getLog();
-		ISpot self = Spot.getInstance();
-		this.range = Integer.parseInt(self.getPersistentProperty("Range"));
-		this.position = Integer.parseInt(self.getPersistentProperty("Position"));
+		//this.link = LinkInterface.getInstance();
+		//this.log = link.getLog();
+		//ISpot self = Spot.getInstance();
+		//this.range = Integer.parseInt(self.getPersistentProperty("Range"));
+		//this.position = Integer.parseInt(self.getPersistentProperty("Position"));
 		
-		log.log(Logger.LINK, "position "+position+" range "+range);
+		//log.log(Logger.LINK, "position "+position+" range "+range);
 	}
 
 	private boolean notInRange(int position) {

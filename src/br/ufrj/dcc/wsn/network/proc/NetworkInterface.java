@@ -6,7 +6,6 @@ import java.util.Vector;
 import br.ufrj.dcc.wsn.link.ILinkInterface;
 import br.ufrj.dcc.wsn.link.PacketReader;
 import br.ufrj.dcc.wsn.link.PacketWriter;
-import br.ufrj.dcc.wsn.link.RangedLinkInterface;
 import br.ufrj.dcc.wsn.profile.Profiler;
 import br.ufrj.dcc.wsn.util.Logger;
 import br.ufrj.dcc.wsn.util.Sorter;
@@ -28,24 +27,25 @@ public class NetworkInterface implements Runnable {
 	private static final Random random = new Random();
 	private static NetworkInterface instance;
 
-	private final ILinkInterface link;
+	private ILinkInterface link;
+	private Logger log;
 	
 	private final Vector neighbors;
 	private final Thread receiver;
 	private final RoutingEntry mySelf;
 	private final Sorter sorter;
-	private final Logger log;
+	
 	
 	private RoutingEntry parent;
 	private Application app;
 	
 	private NetworkInterface() {
-		this.link = RangedLinkInterface.getInstance();
+		//this.link = RangedLinkInterface.getInstance();
 		this.neighbors = new Vector();
 		this.receiver = new Thread(this);
 		this.mySelf = new RoutingEntry();
 		this.sorter = new Sorter(this.neighbors);
-		this.log = link.getLog();
+		//this.log = link.getLog();
 	}
 	
 	public static NetworkInterface getInstance() {
@@ -195,6 +195,7 @@ public class NetworkInterface implements Runnable {
 	private void handleSync(PacketReader reader) {
 		RoutingEntry sync = new RoutingEntry();
 		sync.readFrom(reader);
+		
 		log.log(Logger.NET, "arrived from "+IEEEAddress.toDottedHex(reader.getSourceAddress())+" sync"+sync);
 		
 		addNeighbor(sync);
@@ -244,24 +245,28 @@ public class NetworkInterface implements Runnable {
 		return true;
 	}
 	
+	public void processIncommingMessage() {
+		log.log(Logger.NET, "waiting");
+		PacketReader reader = link.getReader();	
+		synchronized (reader) {
+			Profiler.getInstance().receiving(reader.getLength());
+			byte packetType = reader.getNextByte();
+			
+			if (packetType == SYNC) {
+				handleSync(reader);
+			} else if (packetType == COORD) {
+				handleCoord(reader);
+			} else {
+				handleData(reader);
+			}
+		}
+	}
+	
 	public void run() {
 		Profiler.getInstance().startProcessing();
 		
 		while (waitNotInterrupted(1)) {
-			log.log(Logger.NET, "waiting");
-			PacketReader reader = link.getReader();	
-			synchronized (reader) {
-				Profiler.getInstance().receiving(reader.getLength());
-				byte packetType = reader.getNextByte();
-				
-				if (packetType == SYNC) {
-					handleSync(reader);
-				} else if (packetType == COORD) {
-					handleCoord(reader);
-				} else {
-					handleData(reader);
-				}
-			}
+			processIncommingMessage();
 		}
 		
 		Profiler.getInstance().stopProcessing();
@@ -293,5 +298,25 @@ public class NetworkInterface implements Runnable {
 
 	public Logger getLog() {
 		return log;
+	}
+
+	public void setLinkInterface(ILinkInterface link) {
+		this.link = link;
+	}
+
+	public void setLogger(Logger log) {
+		this.log = log;
+	}
+
+	public long getParentAddress() {
+		return parent.getAddress();
+	}
+
+	public int getNeighborsSize() {
+		return neighbors.size();
+	}
+
+	public void clearNeighbors() {
+		neighbors.clear();
 	}
 }

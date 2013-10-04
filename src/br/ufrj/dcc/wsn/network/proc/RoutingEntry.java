@@ -11,7 +11,10 @@ public class RoutingEntry extends Message {
 	private short energy;
 	
 	public RoutingEntry() {
-		
+		this.cycle = 0;
+		this.hops = 0;
+		this.coord = false;
+		this.energy = 0;
 	}
 	
 	public void readFrom(PacketReader reader) {
